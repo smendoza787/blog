@@ -1,6 +1,6 @@
 ---
 published: true
-layout: default
+layout: post
 title:  "Enrolling In A Web Developer Program"
 date:   2017-03-15 16:16:01 -0600
 permalink: /2017/03/15/enrolling-in-a-program
