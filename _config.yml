@@ -3,9 +3,9 @@ permalink:      /:year-:month-:day/:title
 
 # Setup
 title:          Do Or Dev
-paginate:       5
+paginate:       10
 baseurl:        ""
-url:            "https://chesterhow.github.io/tale"
+url:            "https://smendoza.me/blog"
 
 # Assets
 sass:
@@ -17,14 +17,14 @@ markdown:       kramdown
 
 # About
 author:
-  name:         Chester How
-  url:          http://chester.how
-  email:        chesterhow@gmail.com
+  name:         Sergio Mendoza
+  url:          https://smendoza.me
+  email:        smendoza787@gmail.com
 
 # Custom vars
 version:        3.4.1
 github:
-  repo:         https://github.com/chesterhow/tale
+  repo:         https://github.com/smendoza787/blog
 
 # Gems
 gems:
