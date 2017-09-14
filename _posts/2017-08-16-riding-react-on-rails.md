@@ -13,7 +13,7 @@ Through this project I was able to solidify a ton of concepts, and use some awes
 
 I decided to use the [Google Places API](https://developers.google.com/places/) to gather information on the users current location, and display results for nearby Bars, Restaurants, and Dives to help users find their next spot to "turn up" at. ;)
 
-Simple? Of course. But I do plan on adding some algorithms to calculate the distance of the bar divided by the average prices of drinks at the establishment in order to find the best bang-for-your-buck place to drink. *Unfortunately,* I didn't find an API specific enough to find the prices of menu items. Probably for good reason, drink prices can be as variable as gas prices in some places. But perhaps it would make an awesome project for the future.
+Simple? Of course. But I do plan on adding some algorithms to calculate the distance of the bar divided by the average prices of drinks at the establishment in order to find the best bang-for-your-buck place to drink. *Unfortunately,* I didn't find an API specific enough to find the prices of menu items. And probably for good reason, drink prices can be as variable as gas prices in some places. But perhaps it would make an awesome project for the future.
 
 ## Planning
 

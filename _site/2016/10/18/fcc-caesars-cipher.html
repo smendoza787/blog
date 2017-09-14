@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      More Projects, More Podcasts... &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://locahost:4000/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2016-10-18 15:16:01 -0700">October 18, 2016</time>
+    
+  </div>
+
+  <h1 class="post-title">More Projects, More Podcasts...</h1>
+  <div class="post-line"></div>
+
+  <p>For my next challenge on FCC I will be working with Caesar’s Cipher. I have been pulling my hair out on how close I feel I am to solving this problem but for some reason cannot get it.</p>
+
+<p>I figured this would be a good time to break this problem down in writing to easily understand while simultaneously working on my blogging skills. 😉</p>
+
+<p>This challenge is about decoding a particular cipher, the ROT13 cipher which simply takes a letter, and shifts it 13 places, so A -&gt; N, B -&gt; O, etc.</p>
+
+<p>In order to shift these capital letters we would take their ASCII code character by converting the character using String.prototype.charCodeAt() (i.e. A -&gt; 65, B -&gt;  66, C -&gt; 67, etc.) and add 13, and then translate that charCode back into a letter using String.fromCharCode()</p>
+
+<p>Seems simple enough right? Just take each letter and jump 13 spots in the alphabet? Well I encountered a couple problems along the way…</p>
+
+<p>When you get to N and beyond, jumping 13 spots forward would result in a character that is not a letter
+For example, the ASCII code for Q is 81, adding 13 would result in 94, translating into the ^ character
+So, each capital letter is already “assigned” another, meaning that the second half of the alphabet would have to jump back 13 spaces instead of forward to avoid any error or confusion
+The order of if statements is important, when I first wrote this code it would not run properly, and only the first number of the codeArray was being manipulated and the following numbers were not firing
+So I have created two variables right off the bat, codeArray and finalOutcome. codeArray is an empty array that will store the code characters and take care of the addition/subtraction of the code, while finalOutcome is an empty string that will push the decoded characters into.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">rot13</span><span class="p">(</span><span class="nx">str</span><span class="p">)</span> <span class="p">{</span>
+ <span class="kd">var</span> <span class="nx">codeArray</span> <span class="o">=</span> <span class="p">[];</span>
+ <span class="kd">var</span> <span class="nx">finalOutcome</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Next, I’ll take the ASCII charCode of each letter in the passed string, and push it to an array.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">str</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">str</span><span class="p">.</span><span class="nx">charCodeAt</span><span class="p">(</span><span class="nx">i</span><span class="p">);</span>
+  <span class="nx">codeArray</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">x</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Now I’ll use a series of else if statements to determine whether to add or subtract 13 from the charCode, or leave as is otherwise.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">j</span> <span class="o">&lt;</span> <span class="nx">codeArray</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">j</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">65</span> <span class="o">||</span> <span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">90</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">78</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">13</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">91</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">codeArray</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">-=</span> <span class="mi">13</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Now I’ll use fromCharCode to translate the code into readable characters, and push them into the finalOutcome string.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">k</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">k</span> <span class="o">&lt;</span> <span class="nx">codeArray</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">k</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">z</span> <span class="o">=</span> <span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">(</span><span class="nx">codeArray</span><span class="p">[</span><span class="nx">k</span><span class="p">]);</span>
+  <span class="nx">finalOutcome</span> <span class="o">+=</span> <span class="nx">z</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+<p>Finally when we return finalOutcome we get the decoded cipher!</p>
+
+<p>A couple of things I still need work on:</p>
+
+<ol>
+  <li>
+    <p>Unnecessary storage of variables. I store everything in variables because it seems easier to me to work with, but whenever I check other code I see others going straight to the return function to bypass storage of variables. In due time I will get used to omitting unnecessary variables but it is currently helping my learning process to do otherwise</p>
+  </li>
+  <li>
+    <p>I definitely need to write out these problems more. I was really struggling trying to do everything in my head before, but breaking it down and writing everything out in english before I actually wrote some code was crucial to my success. I think I can get used to this.</p>
+  </li>
+</ol>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://locahost:4000/2016/10/27/more-projects-more-podcasts" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://locahost:4000/2016/10/11/late-nights-early-mornings" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
