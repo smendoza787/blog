@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Adding a JQuery Front End to Hyyker Rails App &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-07-24 15:16:01 -0700">July 24, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Adding a JQuery Front End to Hyyker Rails App</h1>
+  <div class="post-line"></div>
+
+  <p>Here we are again; a month older, a month wiser and another really productive month towards meeting my goals of coming a software developer.</p>
+
+<p>Over the past month I’ve had the privilege of combining some of my skills and interests into creating an app called Hyyker! I’ve learned a ton of new stuff about JavaScript, jQuery, and how they fit into the Rails asset pipeline, and with my newfound knowledge I was able to add some interactive features and render content to the page without any page reloads! Lets see how I did it…</p>
+
+<p>With jQuery I’ve been able to query elements on the page and use AJAX to request and inject the response into elements in the DOM at my whim. I’ve also learned how to serialize and render JSON with Rails, and consume the data on the front end of the application.</p>
+
+<p>To do this, I had to do a bit of prep in order to convert my Rails app into an API Back-End (with some pages still rendering the <code class="highlighter-rouge">:show</code> and <code class="highlighter-rouge">:index</code> views) that served up JSON data upon request to it’s endpoints.</p>
+
+<h1 id="serializers"><a href="#header-2"></a>Serializers</h1>
+
+<p>First, I enlisted the help of the <code class="highlighter-rouge">active_models_serializers</code> gem in order to serialize my responses at the Model level of my application.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># /serializers/trail_serializer.rb</span>
+
+<span class="k">class</span> <span class="nc">TrailSerializer</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializer</span>
+  <span class="n">attributes</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:location</span><span class="p">,</span> <span class="ss">:distance</span><span class="p">,</span> <span class="ss">:elevation</span><span class="p">,</span> <span class="ss">:trail_type</span>
+  <span class="n">has_many</span> <span class="ss">:users</span>
+  <span class="n">has_many</span> <span class="ss">:comments</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Now whenever you make a request to the trail route and specify a JSON response, you’ll get JSON in return:</p>
+
+<p><img src="http://i.imgur.com/bB9uM5K.gifv" alt="gif" /></p>
+
+<h1 id="controllers"><a href="#header-2"></a>Controllers</h1>
+
+<p>Next, I went through each controller and added <code class="highlighter-rouge">respond_to</code> methods to delegate which response to send back to the browser. So now whenever you hit the endpoint in a regular browser you would be served HTML, but when you explicitly request <code class="highlighter-rouge">JSON</code>, you get <code class="highlighter-rouge">JSON</code> back.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># users_controller.rb</span>
+
+<span class="k">def</span> <span class="nf">show</span>
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">html</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">index</span>
+  <span class="vi">@users</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">html</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@users</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Now that my endpoints were setup, all that was left to do was use <code class="highlighter-rouge">ajax</code> to make requests to the endpoints, convert the <code class="highlighter-rouge">JSON</code> response to JavaScript Object prototypes, and then use JQuery inside the callback functions to render the data onto the page!</p>
+
+<h1 id="javascriptjquery"><a href="#header-2"></a>JavaScript/JQuery</h1>
+
+<p>I had originally planned on putting all of my JavaScript inside the JS files inside of the pipeline, but I quickly realized I needed to put the jQuery selectors on the html page itself to make sure that all of the correct elements were loaded on the page before the JavaScript loaded.</p>
+
+<p>To render a resource index, I chose to render the user index of each trail, in order to display the hikers of each trail underneath the trail div. This part was pretty simple because I already had my <code class="highlighter-rouge">:trails</code> resource rendering all of its <code class="highlighter-rouge">:users</code>, I just had to convert each response to a JavaScript Object, and use its properties and methods to display the data on the page.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">attachShowUsers</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">$</span><span class="p">(</span><span class="s1">'.show-users-btn'</span><span class="p">).</span><span class="nx">click</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">id</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s2">"id"</span><span class="p">);</span>
+    <span class="kd">var</span> <span class="nx">json</span> <span class="o">=</span> <span class="s2">"/trails/"</span> <span class="o">+</span> <span class="nx">id</span> <span class="o">+</span> <span class="s2">".json"</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">trailJSON</span><span class="p">)</span> <span class="p">{</span>
+      <span class="c1">// creating new Trail JS Object</span>
+      <span class="kd">var</span> <span class="nx">trail</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">Trail</span><span class="p">(),</span> <span class="nx">trailJSON</span><span class="p">);</span>
+
+      <span class="kd">var</span> <span class="nx">trailUsersId</span> <span class="o">=</span> <span class="s2">"#trail-users-"</span> <span class="o">+</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">showUsersBtn</span> <span class="o">=</span> <span class="s2">"#show-users-btn-"</span> <span class="o">+</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">id</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="nx">trailUsersId</span><span class="p">).</span><span class="nx">children</span><span class="p">().</span><span class="nx">length</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// if users div is empty,</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nx">showUsersBtn</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="s2">"Hide Hyykers"</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="s1">'&lt;h3 class="text-center"&gt;Hyykers&lt;/h3&gt;'</span><span class="p">;</span>
+          <span class="nx">trail</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">userJSON</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">User</span><span class="p">(),</span> <span class="nx">userJSON</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">html</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">displayNameOrEmail</span><span class="p">()))</span> <span class="p">{</span>
+              <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;div class="trail-user-box"&gt;'</span><span class="p">;</span>
+              <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h4&gt;'</span> <span class="o">+</span> <span class="nx">user</span><span class="p">.</span><span class="nx">displayNameOrEmail</span><span class="p">()</span> <span class="o">+</span> <span class="s1">'&lt;/h4&gt;'</span><span class="p">;</span>
+              <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;a href="'</span> <span class="o">+</span> <span class="nx">user</span><span class="p">.</span><span class="nx">displayUrlPath</span><span class="p">()</span> <span class="o">+</span> <span class="s1">'" class="btn btn-success trail-user"&gt;View Profile&lt;/a&gt;'</span><span class="p">;</span>
+              <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span><span class="p">;</span>
+            <span class="p">}</span>
+          <span class="p">});</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">html</span> <span class="o">=</span> <span class="s1">'&lt;h3 class="text-center"&gt;No Hyykers Yet!&lt;/h3&gt;'</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nx">trailUsersId</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">html</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nx">trailUsersId</span><span class="p">).</span><span class="nx">empty</span><span class="p">();</span>
+        <span class="nx">$</span><span class="p">(</span><span class="nx">showUsersBtn</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="s2">"Show Hyykers"</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>I had a little trouble deploying to Heroku by using ES6 template literals when I rendered the data, so I had to botch it up a bit and use plain ol’ string concatenation for now. But now I realize the utility of something like Handlebars.js, and I’ll be refactoring it in the app really soon. 😉</p>
+
+<p>For my show page I added in navigational buttons to navigate between <code class="highlighter-rouge">:trails</code>. When clicked, the navigation button renders a <code class="highlighter-rouge">GET</code> request for the next (or previous) <code class="highlighter-rouge">trail</code>, and renders its <code class="highlighter-rouge">data</code> along with its <code class="highlighter-rouge">users</code> and <code class="highlighter-rouge">comments</code>.</p>
+
+<p>I had a few interesting problems to solve with this part of development. First off, I thought getting the next sequential Trail ID would be as easy as making a GET request to <code class="highlighter-rouge">"trails/" + trails.id + 1</code>. It worked when I created a few trails, but the problem was when I deleted a Trail (with an ID of 3), now whenever I was at Trail 2, the code would make a <code class="highlighter-rouge">GET</code> request for Trail 3 which didn’t exist.
+I tried using a recursive function, but that just made multiple <code class="highlighter-rouge">GET</code> requests when jumping from Trail 4 to Trail 7, if 5 and 6 were deleted.</p>
+
+<p>I ended up created a variable to <code class="highlighter-rouge">GET</code> all trails, and then mapped that array of trails, into an array of their IDs. I was able to iterate over each ID number in the array in order to make the correct <code class="highlighter-rouge">GET</code> requests. Another neat bonus was being able to use that arrays length to avoid going past the last Trail when navigating with the nav buttons.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">lastTrailIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">trailsIdArray</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">currentIndex</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">currentTrailId</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#next-trail-btn'</span><span class="p">).</span><span class="nx">data</span><span class="p">(</span><span class="s2">"id"</span><span class="p">);</span>
+
+  <span class="nx">$</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">attachNextButton</span><span class="p">();</span>
+    <span class="nx">attachPrevButton</span><span class="p">();</span>
+
+    <span class="c1">// Get lastTrail ID so you wont load past the next trail</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">'/trails.json'</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">trails</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">trailsIdArray</span> <span class="o">=</span> <span class="nx">trails</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">trail</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">trail</span><span class="p">[</span><span class="s1">'id'</span><span class="p">];</span>
+      <span class="p">});</span>
+      <span class="nx">lastTrailIndex</span> <span class="o">=</span> <span class="nx">trails</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="nx">currentIndex</span> <span class="o">=</span> <span class="nx">trailsIdArray</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">currentTrailId</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+</code></pre>
+</div>
+
+<p>Rendering the <code class="highlighter-rouge">trails</code> data on the page was probably the most tedious part of the whole project. Each “Log Hike” button was a link with its own URL to create a new <code class="highlighter-rouge">Hike</code>, and each <code class="highlighter-rouge">Trail</code> had its own comments and users to render.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">getPrevTrail</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">trailJsonUrl</span> <span class="o">=</span> <span class="s2">"/trails/"</span> <span class="o">+</span> <span class="nx">id</span> <span class="o">+</span> <span class="s2">".json"</span><span class="p">;</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">trailJsonUrl</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">trailJSON</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">trail</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">Trail</span><span class="p">(),</span> <span class="nx">trailJSON</span><span class="p">);</span>
+      <span class="nx">displayTrail</span><span class="p">(</span><span class="nx">trail</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">getNextTrail</span><span class="p">(</span><span class="nx">id</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">trailJsonUrl</span> <span class="o">=</span> <span class="s2">"/trails/"</span> <span class="o">+</span> <span class="nx">id</span> <span class="o">+</span> <span class="s2">".json"</span><span class="p">;</span>
+    <span class="nx">$</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">trailJsonUrl</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">trailJSON</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">trail</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">Trail</span><span class="p">(),</span> <span class="nx">trailJSON</span><span class="p">);</span>
+      <span class="nx">displayTrail</span><span class="p">(</span><span class="nx">trail</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">displayTrail</span><span class="p">(</span><span class="nx">trail</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// putting data into variables because heroku doesnt like template literals</span>
+    <span class="kd">var</span> <span class="nx">distanceText</span> <span class="o">=</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">distance</span> <span class="o">+</span> <span class="s2">" mi."</span>
+    <span class="kd">var</span> <span class="nx">elevationText</span> <span class="o">=</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">elevation</span> <span class="o">+</span> <span class="s2">" ft"</span>
+    <span class="kd">var</span> <span class="nx">logHikeBtn</span> <span class="o">=</span> <span class="s1">'&lt;a href="/trails/'</span> <span class="o">+</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">id</span> <span class="o">+</span> <span class="s1">'/hikes/new" class="btn btn-warning"&gt;Log Hike&lt;/a&gt;'</span><span class="p">;</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-distance'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">distanceText</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-elevation'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">elevationText</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-name'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'.trail-name-span'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-location'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">location</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-type'</span><span class="p">).</span><span class="nx">text</span><span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">trail_type</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#next-trail-btn'</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">"data-id"</span><span class="p">,</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#prev-trail-btn'</span><span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s2">"data-id"</span><span class="p">,</span> <span class="nx">trail</span><span class="p">.</span><span class="nx">id</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-users'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">displayHikers</span><span class="p">(</span><span class="nx">trail</span><span class="p">));</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#log-hike-btn'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">logHikeBtn</span><span class="p">);</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-comments'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">displayComments</span><span class="p">(</span><span class="nx">trail</span><span class="p">));</span>
+    <span class="nx">$</span><span class="p">(</span><span class="s1">'.comment-form'</span><span class="p">).</span><span class="nx">hide</span><span class="p">();</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">displayComments</span><span class="p">(</span><span class="nx">trail</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="s1">''</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">comments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">trail</span><span class="p">.</span><span class="nx">comments</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">commentJSON</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">comment</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">Comment</span><span class="p">(),</span> <span class="nx">commentJSON</span><span class="p">);</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;div class="trail-comment"&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h4&gt;'</span> <span class="o">+</span> <span class="nx">comment</span><span class="p">.</span><span class="nx">content</span> <span class="o">+</span> <span class="s1">'&lt;/h4&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;a href="/users/'</span> <span class="o">+</span> <span class="nx">comment</span><span class="p">.</span><span class="nx">userId</span> <span class="o">+</span> <span class="s1">'"&gt;Hyyker&lt;/a&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span>
+      <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h2 id="no-hikers" class="text-center"&gt;No comments yet!&lt;/h2&gt;'</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">html</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="kd">function</span> <span class="nx">displayHikers</span><span class="p">(</span><span class="nx">trail</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="s2">""</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">trail</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">trail</span><span class="p">.</span><span class="nx">users</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">userJSON</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">user</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">User</span><span class="p">(),</span> <span class="nx">userJSON</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">html</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">displayNameOrEmail</span><span class="p">()))</span> <span class="p">{</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;div class="hyyker text-center"&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;div class="hyyker-img"&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;img src="http://placekitten.com/g/125/125" width="80" height="80"&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;div class="hyyker-email"&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h3&gt;&lt;a href="${user.displayUrlPath()}"&gt;'</span> <span class="o">+</span> <span class="nx">user</span><span class="p">.</span><span class="nx">displayNameOrEmail</span><span class="p">()</span> <span class="o">+</span> <span class="s1">'&lt;/a&gt;&lt;/h3&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span><span class="p">;</span>
+          <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span><span class="p">;</span>
+        <span class="p">}</span>
+      <span class="p">});</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+      <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h2 id="no-hikers" class="text-center"&gt;Looks like no Hyykers have hiked this trail yet!&lt;/h2&gt;'</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">html</span><span class="p">;</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>For the last requirement, I was tasked to use a Rails form and AJAX to POST a new resource and render it to the page. I decided to add comment functionality on the Trails resources. First I added a nested <code class="highlighter-rouge">:comments</code> resource in the <code class="highlighter-rouge">:trails</code> resource</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">resources</span> <span class="ss">:trails</span> <span class="k">do</span>
+  <span class="n">resources</span> <span class="ss">:hikes</span>
+  <span class="n">resources</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:show</span><span class="p">]</span>
+  <span class="n">resources</span> <span class="ss">:comments</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:create</span><span class="p">,</span> <span class="ss">:show</span><span class="p">,</span> <span class="ss">:destroy</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+<p>Then made the Rails <code class="highlighter-rouge">form_for</code> a nested resource, and included <code class="highlighter-rouge">hidden_field</code> tags:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="o">&lt;</span><span class="sx">%= form_for([@trail, @comment]) do |f| %&gt;
+    &lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">hidden_field</span> <span class="ss">:trail_id</span><span class="p">,</span> <span class="ss">value: </span><span class="vi">@trail</span><span class="p">.</span><span class="nf">id</span> <span class="sx">%&gt;
+    &lt;%= f.hidden_field :user_id, value: current_user.id %&gt;</span>
+    <span class="o">&lt;</span><span class="sx">%= f.hidden_field :user_email, value: current_user.email %&gt;
+    &lt;%=</span> <span class="n">f</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:content</span><span class="p">,</span> <span class="ss">class: </span><span class="s2">"form-control"</span> <span class="o">%&gt;&lt;</span><span class="n">br</span><span class="o">&gt;</span>
+    <span class="o">&lt;</span><span class="sx">%= f.submit "Post Comment", class: "btn btn-success" %&gt;
+  &lt;% end %&gt;
+</span></code></pre>
+</div>
+
+<p>Next up was handling the form request with JavaScript by hijacking the form on submit, <code class="highlighter-rouge">POST</code>ing the data, and using JQuery to render the comments to the <code class="highlighter-rouge">#trail-comments</code> div.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="nx">$</span><span class="p">(</span><span class="s1">'form'</span><span class="p">).</span><span class="nx">submit</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">){</span>
+      <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+      <span class="kd">var</span> <span class="nx">trailId</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#comment_trail_id'</span><span class="p">).</span><span class="nx">val</span><span class="p">();</span>
+      <span class="kd">var</span> <span class="nx">values</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">serialize</span><span class="p">();</span>
+      <span class="kd">var</span> <span class="nx">posting</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">"/trails/"</span> <span class="o">+</span> <span class="nx">trailId</span> <span class="o">+</span> <span class="s2">"/comments"</span><span class="p">,</span> <span class="nx">values</span><span class="p">);</span>
+      <span class="nx">posting</span><span class="p">.</span><span class="nx">done</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">data</span><span class="p">){</span>
+        <span class="kd">var</span> <span class="nx">comment</span> <span class="o">=</span> <span class="nx">$</span><span class="p">.</span><span class="nx">extend</span><span class="p">(</span><span class="k">new</span> <span class="nx">Comment</span><span class="p">(),</span> <span class="nx">data</span><span class="p">);</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">comment</span><span class="p">.</span><span class="nx">createdAt</span><span class="p">)</span>
+        <span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="s1">'&lt;div class="trail-comment"&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;h4&gt;'</span> <span class="o">+</span> <span class="nx">comment</span><span class="p">.</span><span class="nx">content</span> <span class="o">+</span> <span class="s1">'&lt;/h4&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;p&gt;You just commented!&lt;/p&gt;'</span><span class="p">;</span>
+        <span class="nx">html</span> <span class="o">+=</span> <span class="s1">'&lt;/div&gt;'</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">'#no-hikers'</span><span class="p">).</span><span class="nx">length</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-comments'</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">html</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+          <span class="nx">$</span><span class="p">(</span><span class="s1">'#trail-comments'</span><span class="p">).</span><span class="nx">append</span><span class="p">(</span><span class="nx">html</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">});</span>
+    <span class="p">});</span>
+</code></pre>
+</div>
+
+<p>Being able to request and render data asynchronously has opened my mind to so many possibilities, and definitely has me ready for learning React. Having a framework do all the heavy lifting of rendering views with javascript is a very welcome change and I can’t wait to get deep enough in it to start making some serious projects!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://localhost:4000/2017/08/16/riding-react-on-rails" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://localhost:4000/2017/07/12/using-handlebars-templates" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

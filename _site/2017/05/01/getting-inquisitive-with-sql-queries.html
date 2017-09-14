@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Getting Inquisitive With SQL Queries &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-05-01 15:16:01 -0700">May 01, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Getting Inquisitive With SQL Queries</h1>
+  <div class="post-line"></div>
+
+  <p>After going through a neat tutorial on <a href="https://sqlbolt.com/">SQL</a>, I decided to gid a little deeper into the query language to better understand it.</p>
+
+<h1 id="what-is-sql"><a href="#header-3"></a>What is SQL?</h1>
+
+<p>SQL, aka Structured Query Language, is a domain-specific language designed to allow both technical and non-technical users to query, manipulate and transform data from a relational database. Or in layman’s terms, its a language used to communicate with a database, since it does not understand plain ol’ english.</p>
+
+<p>There are many types of SQL databases, including SQLite, MySQL, PostgreSQL, Oracle, and Microsoft SQL Server. All of these databases support the SQL language standard in their own nuanced ways.</p>
+
+<h1 id="relational-databases"><a href="#header-2"></a>Relational Databases</h1>
+
+<p>It’s pretty important to understand what relational databases are before understanding SQL. A relational database represents a collection of related (two-dimensional) tables.</p>
+
+<p>These tables are very similar to what you would see in an Excel Spreadsheet. There are a fixed number of columns that represent the attributes of each table (Dogs table: name, age, breed; Cars table: make, model, body, color, etc.). Eact row in these tables would represent a particular Dog, or Car with their attributes listed in each column respectively.</p>
+
+<p>The goal of learning SQL is to be able to communicate with these tables, and query useful information across them. Such as What is the average age of Golden Retriever owners? Or, what is the most popular color of a particular car?</p>
+
+<h1 id="select-queries"><a href="#header-2"></a>SELECT Queries</h1>
+
+<p>In order to retrieve data from these databases, we must learn to write SQL SELECT statements, also known as queries.</p>
+
+<p>A query is just a statement that declares what data we are looking for, where to find it in the database, and optionally how to transform it before it’s returned.</p>
+
+<p>You can think of a table in a database as an entity, and each row of that table is a specific instance of that type (ex. Dogs, students, cars, etc.). The columns would then represent the common properties shared by each instance of that entity.</p>
+
+<p>The most basic query would select and display a couple columns from a table and return all rows:</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">column</span><span class="p">,</span> <span class="n">another_column</span>
+<span class="k">FROM</span> <span class="n">mytable</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>This example would return our table and only display the columns we selected.</p>
+
+<p>In order to return the table with all of the columns in that table, we would write something like:</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">mytable</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>This would return mytable with all of the columns associated with that table. The * symbol is called the wildcard symbol and it selects ALL columns to be returned with our table.</p>
+
+<h1 id="adding-constraints-where"><a href="#header-2"></a>Adding Constraints (WHERE)</h1>
+
+<p>We can now select ALL columns to display for our table, but what if we wanted to filter out our results to display the results of a particular condition? Thats where the WHERE clause comes in.</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">column</span><span class="p">,</span> <span class="n">another_column</span><span class="p">,</span> <span class="err">…</span>
+<span class="k">FROM</span> <span class="n">mytable</span>
+<span class="k">WHERE</span> <span class="n">condition</span>
+ <span class="k">AND</span><span class="o">/</span><span class="k">OR</span> <span class="n">another_condition</span>
+ <span class="k">AND</span><span class="o">/</span><span class="k">OR</span> <span class="err">…</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>The WHERE clause applies the condition to all rows of the database and only returns rows that make the condition true. Multiple AND or OR statements can be chained onto the WHERE clause if needed.</p>
+
+<h1 id="sorting-results-order-by"><a href="#header-2"></a>Sorting Results (ORDER BY)</h1>
+
+<p>Most data returned by our database is in no particular order. That can make it difficult to read our returned data. We can use the ORDER BY clause to sort our retrieved data by a certain column attribute in ascending or descending order.</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">column</span><span class="p">,</span> <span class="n">another_column</span><span class="p">,</span> <span class="err">…</span>
+<span class="k">FROM</span> <span class="n">mytable</span>
+<span class="k">WHERE</span> <span class="n">condition</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="k">column</span> <span class="k">ASC</span><span class="o">/</span><span class="k">DESC</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>When the ORDER BY clause is used, it will return all rows in alpha-numerical order based on which column you chose to order by.</p>
+
+<p>You can also use the DISTINCT and LIMIT keywords to either return distinct values (one of multiple rows of the same value), or to limit the values returned by however much you specify.</p>
+
+<h1 id="joining-tables"><a href="#header-2"></a>JOINing Tables</h1>
+
+<p>In the real world, we usually look at more than one database when we are comparing data. You can join tables based on a shared column of data. (i.e. A table of Students that each have a teacher_id column, and another table of Teachers where each row of teachers has their own id).</p>
+
+<div class="language-sql highlighter-rouge"><pre class="highlight"><code><span class="k">SELECT</span> <span class="k">column</span><span class="p">,</span> <span class="n">another_table_column</span><span class="p">,</span> <span class="err">…</span>
+<span class="k">FROM</span> <span class="n">mytable</span>
+<span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">another_table</span>
+ <span class="k">ON</span> <span class="n">mytable</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">another_table</span><span class="p">.</span><span class="n">id</span>
+<span class="k">WHERE</span> <span class="n">condition</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+<span class="k">ORDER</span> <span class="k">BY</span> <span class="k">column</span><span class="p">,</span> <span class="err">…</span> <span class="k">ASC</span><span class="o">/</span><span class="k">DESC</span>
+<span class="k">LIMIT</span> <span class="n">num_limit</span> <span class="k">OFFSET</span> <span class="n">num_offset</span><span class="p">;</span>
+</code></pre>
+</div>
+
+<p>We can use the OFFSET clause to start capturing values at a certain row instead of the default “first” row.</p>
+
+<p>Hopefully this basic overview of SQL queries helps you get started on your SQL learning journey. For more info and a great resource on SQL, visit SQLBolt.com.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://localhost:4000/2017/05/13/festipal-sinatra-project" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://localhost:4000/2017/04/13/my-first-published-ruby-gem" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      I Came, I saw, I published...My First Ruby Gem! &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-04-13 15:16:01 -0700">April 13, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">I Came, I saw, I published...My First Ruby Gem!</h1>
+  <div class="post-line"></div>
+
+  <p>16 hours and then some! I forgot to link WakaTime to my new MacBook. &gt;:)
+There were some laughs, there were some tears, and there was plenty of caffeine. But I’m finally finished with my first Ruby Gem ( Version 0.1.0 at least ;] )!</p>
+
+<p>To start off this project I had the idea of building a CLI that was capable of getting game information for A LOT of sports. NFL, MLB, MLS, NASCAR, you name it. But after a few hours of setting up my object structures, I realized that the sports scores had entirely different structures themselves. Baseball had 9 innings, Hockey has 3 periods, NASCAR has….laps? I honestly don’t even know. As much as I wanted a challenge to become a better programmer by struggling, due to the time constraints I chose to go all-in on the sport I love watching the most (besides football, but we’re a ways out from the 2017 season :( ), the NBA! Also, I figured once I completed the project and got it working, it would be a huge step towards implementing all other sports.</p>
+
+<p>I created a simple CLI Gem called NBA Today that looks up and returns the latest NBA scores and game information all right through your terminal. For a quick video walk-through you can check it out below or click here to see the gem on RubyGems.org or here for the Github Repo</p>
+
+<p>[rubygem youtube VIDEO]</p>
+
+<h1 id="planning"><a href="#header-3"></a>Planning</h1>
+
+<p>To be quite honest, I was feeling myself a bit too much at the beginning of this project. Coming off hot from a few other Object Oriented Ruby labs, I thought I would be able to breeze through this with little to no planning. BOYE WAS I WRONG…</p>
+
+<p>[erroneous IMAGE]</p>
+
+<p>Turns out there was a lot more involved than just a little Nokogiri scraping and I ran into a plethora of issues. But we’ll get to that later…</p>
+
+<p>I started off the planning phase by writing about as much of my idea as I knew. I knew I would be dealing with Games, Teams, Scores, and Players. From the little paragraph I wrote, I was able to set up a basic structure of classes involving those listed objects.</p>
+
+<p>But to start off, I used the bundle gem command. This bootstrapped my project for a quick-start and set up all the files I would need.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>bundle gem nba_today_gem
+</code></pre>
+</div>
+<p>Next, I set up my bin file to write down “the code I wish I had”</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1">#!/usr/bin/env ruby</span>
+
+<span class="nb">require</span> <span class="s2">"bundler/setup"</span>
+<span class="nb">require</span> <span class="s2">"nba_today_gem"</span>
+
+<span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">CommandLine</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">call</span>
+</code></pre>
+</div>
+
+<p>Inferring from this code, I knew I would need a CommandLine class that would be responsible for interfacing with the terminal. But first, let’s walk through the other classes of the program for some context.</p>
+
+<h1 id="gamerb"><a href="#header-3"></a>Game.rb</h1>
+
+<p>The center piece of our program. NBA Today revolves around the Game class to get all of the game information. It has the following attributes:</p>
+
+<p>Status
+Score
+Venue
+Top Performers
+Home Team
+Away Team
+URL
+Recap
+Date</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span>
+  <span class="kp">attr_accessor</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">:score</span><span class="p">,</span> <span class="ss">:venue</span><span class="p">,</span> <span class="ss">:top_peformers</span><span class="p">,</span> <span class="ss">:home_team</span><span class="p">,</span> <span class="ss">:away_team</span><span class="p">,</span> <span class="ss">:url</span><span class="p">,</span> <span class="ss">:recap</span><span class="p">,</span> <span class="ss">:date</span>
+
+  <span class="vc">@@all</span> <span class="o">=</span> <span class="p">[]</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="vi">@top_peformers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="vc">@@all</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">away_team</span><span class="o">=</span><span class="p">(</span><span class="n">away_team</span><span class="p">)</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">away_team</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="no">TypeError</span><span class="p">,</span> <span class="s2">"must be a Team object"</span>
+    <span class="k">else</span>
+      <span class="vi">@away_team</span> <span class="o">=</span> <span class="n">away_team</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">home_team</span><span class="o">=</span><span class="p">(</span><span class="n">home_team</span><span class="p">)</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">home_team</span><span class="p">.</span><span class="nf">is_a?</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">)</span>
+      <span class="k">raise</span> <span class="no">TypeError</span><span class="p">,</span> <span class="s2">"must be a Team object"</span>
+    <span class="k">else</span>
+      <span class="vi">@home_team</span> <span class="o">=</span> <span class="n">home_team</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">find</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="vc">@@all</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">all</span>
+    <span class="vc">@@all</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">totalscore</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">to_i</span> <span class="o">+</span> <span class="nb">self</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">to_i</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">sort_by_total_score</span>
+    <span class="c1"># binding.pry</span>
+    <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">sort!</span> <span class="p">{</span><span class="o">|</span><span class="n">game1</span><span class="p">,</span> <span class="n">game2</span><span class="o">|</span> <span class="n">game2</span><span class="p">.</span><span class="nf">totalscore</span> <span class="o">&lt;=&gt;</span> <span class="n">game1</span><span class="p">.</span><span class="nf">totalscore</span><span class="p">}</span>
+  <span class="k">end</span>
+
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>All of these attributes will be populated via the Scraper class we’ll make in a second. When a new Game is initialized, the instance will be pushed into the Game.all array, and its top_performers will be an empty hash we’ll populate later with the Scraper class as well. In order to enforce Type on the away and home teams, I coded a conditional that will only set the team if it is a Team object. If you were to try and set the home_team as a string, for example, you would get a custom TypeError.</p>
+
+<h1 id="teamrb"><a href="#header-3"></a>Team.rb</h1>
+
+<p>Next, we have our Team class…</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span>
+  <span class="kp">attr_accessor</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:score</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="vi">@name</span> <span class="o">=</span> <span class="nb">name</span>
+    <span class="vi">@score</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>It’s initialized with a name and a scoreboard of an array. @score[0] represents the final score while the rest of the items represent the score of each quarter of the game.</p>
+
+<h1 id="nba_playerrb"><a href="#header-3"></a>Nba_Player.rb</h1>
+
+<p>Next we have our Players class…</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span>
+  <span class="kp">attr_accessor</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:points</span><span class="p">,</span> <span class="ss">:rebounds</span><span class="p">,</span> <span class="ss">:assists</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="vi">@name</span> <span class="o">=</span> <span class="nb">name</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Each player is instantiated with a name, and has the option to have points, rebounds, and assists that we can add via the Scraper class.</p>
+
+<h1 id="scraperrb"><a href="#header-3"></a>Scraper.rb</h1>
+
+<p>FINALLY, THE PIECE DE RESISTåNCE…</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">NbaTodayGem</span><span class="o">::</span><span class="no">Scraper</span>
+  <span class="kp">include</span> <span class="no">CommandLineReporter</span>
+
+  <span class="kp">attr_accessor</span> <span class="ss">:doc</span>
+
+  <span class="k">def</span> <span class="nf">initialize</span>
+    <span class="c1"># CommandLineReporter progress</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">formatter</span> <span class="o">=</span> <span class="s1">'progress'</span>
+
+    <span class="vi">@doc</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">::</span><span class="no">HTML</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="s2">"https://www.msn.com/en-us/sports/nba/scores"</span><span class="p">)).</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.sectionsgroup div.section"</span><span class="p">)[</span><span class="mi">0</span><span class="p">.</span><span class="nf">.</span><span class="mi">3</span><span class="p">]</span>
+    <span class="vi">@games</span> <span class="o">=</span> <span class="p">[]</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">games</span>
+    <span class="vi">@games</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">scrape_nba_scores</span>
+
+    <span class="n">report</span> <span class="k">do</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">doc</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"table tbody"</span><span class="p">).</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">game</span><span class="o">|</span>
+        <span class="n">new_nba_game</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">new</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">status</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.matchstatus.orangeText.hidedownlevel.size4.alignleft div"</span><span class="p">).</span><span class="nf">text</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">venue</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.venue.size4"</span><span class="p">).</span><span class="nf">text</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">url</span> <span class="o">=</span> <span class="s2">"https://www.msn.com/</span><span class="si">#{</span><span class="n">game</span><span class="p">.</span><span class="nf">attribute</span><span class="p">(</span><span class="s2">"data-link"</span><span class="p">).</span><span class="nf">value</span><span class="si">}</span><span class="s2">"</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.teamname.teamlineup.alignright.size234"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.totalscore.teamlineup"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Total score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(7)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 1 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(8)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 2 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(9)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 3 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(10)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 4 score</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.teamname.teamlinedown.alignright.size234"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.totalscore.teamlinedown"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Total score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(5)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 1 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(6)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 2 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(7)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 3 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(8)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 4 score</span>
+
+        <span class="c1"># scrape_nba_game_info(new_nba_game)</span>
+
+        <span class="c1">#games &lt;&lt; new_nba_game</span>
+        <span class="c1"># CommandLineReporter progress</span>
+        <span class="n">progress</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="c1">#games</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">scrape_nba_game_info</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+    <span class="n">get_game_info</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">::</span><span class="no">HTML</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">url</span><span class="p">))</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"#gamematchupsummary div.basicinfo div.datetime.hide1"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="k">if</span> <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">==</span> <span class="s2">""</span>
+      <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">=</span> <span class="s2">"LIVE NOW"</span>
+    <span class="k">end</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">recap</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"#matchuprecapmodule header h1"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">point_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">point_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">points</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">point_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">points</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">rebound_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">rebound_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">rebounds</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">rebound_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">rebounds</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">assist_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">assist_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">assists</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">assist_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">assists</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">]</span> <span class="o">=</span> <span class="n">point_leaders</span>
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">]</span> <span class="o">=</span> <span class="n">rebound_leaders</span>
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">]</span> <span class="o">=</span> <span class="n">assist_leaders</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Our Scraper is initialized with a @doc instance variable that contains a Nokogiri object of the MSN NBA Scores page. It’s also initialized with a @games variable that will contain instances of Games as they are scraped from the page. It’s also initialized with a progress formatter from our CommandLineReporter Gem, more on that later.</p>
+
+<p>[IMAGE]</p>
+
+<p>The Scraper has two main methods, #scrape_nba_scores and #scrape_nba_game_info.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">scrape_nba_scores</span>
+
+    <span class="n">report</span> <span class="k">do</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">doc</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"table tbody"</span><span class="p">).</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">game</span><span class="o">|</span>
+        <span class="n">new_nba_game</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">new</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">status</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.matchstatus.orangeText.hidedownlevel.size4.alignleft div"</span><span class="p">).</span><span class="nf">text</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">venue</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.venue.size4"</span><span class="p">).</span><span class="nf">text</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">url</span> <span class="o">=</span> <span class="s2">"https://www.msn.com/</span><span class="si">#{</span><span class="n">game</span><span class="p">.</span><span class="nf">attribute</span><span class="p">(</span><span class="s2">"data-link"</span><span class="p">).</span><span class="nf">value</span><span class="si">}</span><span class="s2">"</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.teamname.teamlineup.alignright.size234"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.totalscore.teamlineup"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Total score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(7)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 1 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(8)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 2 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(9)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 3 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(1) td:nth-child(10)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 4 score</span>
+
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Team</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.teamname.teamlinedown.alignright.size234"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"td.totalscore.teamlinedown"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Total score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(5)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 1 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(6)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 2 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(7)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 3 score</span>
+        <span class="n">new_nba_game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">game</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"tr:nth-child(2) td:nth-child(8)"</span><span class="p">).</span><span class="nf">text</span><span class="p">.</span><span class="nf">gsub</span><span class="p">(</span><span class="sr">/[\n _]/</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span> <span class="c1"># Quarter 4 score</span>
+
+        <span class="c1"># scrape_nba_game_info(new_nba_game)</span>
+
+        <span class="c1">#games &lt;&lt; new_nba_game</span>
+        <span class="c1"># CommandLineReporter progress</span>
+        <span class="n">progress</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="c1">#games</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<h1 id="scrape_nba_scores"><a href="#header-3"></a>#scrape_nba_scores</h1>
+<p>Our #scrape_nba_scores method create a new instance of a Game, then pipes in all of the data we scrape from the Scores page. At the end of that method we call on the #scrape_nba_game_info and pass in our new game to get additional information for that game.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">scrape_nba_game_info</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+    <span class="n">get_game_info</span> <span class="o">=</span> <span class="no">Nokogiri</span><span class="o">::</span><span class="no">HTML</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">url</span><span class="p">))</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"#gamematchupsummary div.basicinfo div.datetime.hide1"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="k">if</span> <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">==</span> <span class="s2">""</span>
+      <span class="n">game</span><span class="p">.</span><span class="nf">date</span> <span class="o">=</span> <span class="s2">"LIVE NOW"</span>
+    <span class="k">end</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">recap</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"#matchuprecapmodule header h1"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">point_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">point_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">points</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">point_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">points</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.points a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">rebound_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">rebound_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">rebounds</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">rebound_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">rebounds</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.rebounds a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">assist_leaders</span> <span class="o">=</span> <span class="p">[</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(3) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">),</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">NbaPlayer</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(5) div div.board span div.playername span"</span><span class="p">).</span><span class="nf">text</span><span class="p">)</span>
+    <span class="p">]</span>
+
+    <span class="n">assist_leaders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">assists</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(3) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+    <span class="n">assist_leaders</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nf">assists</span> <span class="o">=</span> <span class="n">get_game_info</span><span class="p">.</span><span class="nf">css</span><span class="p">(</span><span class="s2">"div.leaders div.assists a:nth-child(5) div div.board span div.stats span"</span><span class="p">).</span><span class="nf">text</span>
+
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">]</span> <span class="o">=</span> <span class="n">point_leaders</span>
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">]</span> <span class="o">=</span> <span class="n">rebound_leaders</span>
+    <span class="n">game</span><span class="p">.</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">]</span> <span class="o">=</span> <span class="n">assist_leaders</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<h1 id="scrape_nba_game_info"><a href="#header-3"></a>#scrape_nba_game_info</h1>
+
+<p>Here, we use the url instance variable of the game object to open the MSN Sports page of the selected game and scrape more additional information like top performers, the date, and a little Recap headline. Next, we can wrap up all of our data and execute it through our CommandLine class.</p>
+
+<h1 id="commandlinerb"><a href="#header-3"></a>CommandLine.rb</h1>
+
+<p>For this class I wrote a few methods I knew I would be calling on throughout the CLI:</p>
+
+<p>#call
+#menu
+#list_games
+#pick_game_menu
+#show_game
+#goodbye</p>
+
+<h1 id="call"><a href="#header-4"></a>#call</h1>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">call</span>
+    <span class="nb">puts</span> <span class="s2">"Hello, Welcome to the NBA Today Gem!"</span>
+    <span class="n">menu</span>
+    <span class="n">goodbye</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The #call method simply welcomes the user and displays the menu. Once that menu is exited, we display our #goodbye</p>
+
+<h1 id="menu"><a href="#header-4"></a>#menu</h1>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">menu</span>
+    <span class="n">input</span> <span class="o">=</span> <span class="kp">nil</span>
+
+    <span class="k">until</span> <span class="n">input</span> <span class="o">==</span> <span class="s2">"exit"</span>
+      <span class="nb">puts</span>
+      <span class="nb">puts</span> <span class="s2">"Type in 'nba today' for the latest NBA scores"</span>
+      <span class="nb">puts</span> <span class="s2">"or type 'exit' to quit!"</span>
+      <span class="nb">puts</span>
+      <span class="nb">print</span> <span class="s2">"&gt; "</span>
+      <span class="n">input</span> <span class="o">=</span> <span class="nb">gets</span><span class="p">.</span><span class="nf">strip</span><span class="p">.</span><span class="nf">downcase</span>
+
+      <span class="k">if</span> <span class="n">input</span> <span class="o">==</span> <span class="s2">"nba today"</span>
+        <span class="n">list_games</span>
+        <span class="n">pick_game_menu</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>Seeing that our program is fairly simple, and I didn’t want to have a heavy initial load time, I wanted to have a little “main menu” where you could start the scraping process.</p>
+
+<h1 id="list_games"><a href="#header-4"></a>#list_games</h1>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">list_games</span>
+    <span class="k">if</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">size</span> <span class="o">==</span> <span class="mi">0</span>
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Scraper</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">scrape_nba_scores</span>
+
+      <span class="n">header</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s1">'NBA SCORES'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">75</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">,</span> <span class="ss">:rule</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:color</span> <span class="o">=&gt;</span> <span class="s1">'green'</span><span class="p">,</span> <span class="ss">:bold</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:timestamp</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">each</span><span class="p">.</span><span class="nf">with_index</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">game</span><span class="p">,</span> <span class="n">index</span><span class="o">|</span>
+        <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">'GAME NUM.'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">date</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">30</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">'SCORE'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+          <span class="k">end</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+          <span class="k">end</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+          <span class="k">end</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">else</span>
+      <span class="n">header</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s1">'NBA SCORES'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">50</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">,</span> <span class="ss">:rule</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:color</span> <span class="o">=&gt;</span> <span class="s1">'green'</span><span class="p">,</span> <span class="ss">:bold</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:timestamp</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+      <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">each</span><span class="p">.</span><span class="nf">with_index</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">game</span><span class="p">,</span> <span class="n">index</span><span class="o">|</span>
+        <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">'GAME NUM.'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">5</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">date</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">30</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">'SCORE'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">10</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'right'</span><span class="p">)</span>
+          <span class="k">end</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+          <span class="k">end</span>
+          <span class="n">row</span> <span class="k">do</span>
+            <span class="n">column</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+            <span class="n">column</span><span class="p">(</span><span class="n">game</span><span class="p">.</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+          <span class="k">end</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>I was proud of the #list_games method I wrote because of that first line. Before I added the if !self.games line of code, every time I typed in ‘list games’ in my program it would have to reload and rescrape the web pages for data, resulting in a terrible user experience. This way, the if statement checks to see if self.games is populated first, before scraping the page. If we already have data, it simply displays it. No need for scraping!</p>
+
+<h1 id="pick_game_menu"><a href="#header-4"></a>#pick_game_menu</h1>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">pick_game_menu</span>
+    <span class="n">game_no</span> <span class="o">=</span> <span class="kp">nil</span>
+
+    <span class="k">until</span> <span class="n">game_no</span> <span class="o">==</span> <span class="s1">'back'</span> <span class="o">||</span> <span class="n">game_no</span> <span class="o">==</span> <span class="s1">'exit'</span>
+      <span class="nb">puts</span>
+      <span class="nb">puts</span> <span class="s2">"Type in a GAME NUM. to view more stats and info"</span>
+      <span class="nb">puts</span> <span class="s2">"Type 'list games' for a list of games"</span>
+      <span class="nb">puts</span> <span class="s2">"Type 'back' to go back to the main menu."</span>
+      <span class="nb">puts</span>
+      <span class="nb">print</span> <span class="s2">"&gt; "</span>
+      <span class="n">game_no</span> <span class="o">=</span> <span class="nb">gets</span><span class="p">.</span><span class="nf">strip</span><span class="p">.</span><span class="nf">downcase</span>
+
+      <span class="k">if</span> <span class="n">game_no</span> <span class="o">==</span> <span class="s2">"list games"</span>
+        <span class="n">list_games</span>
+        <span class="n">pick_game_menu</span>
+      <span class="k">elsif</span> <span class="n">game_no</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">game_no</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">&lt;=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">length</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">game_no</span><span class="p">.</span><span class="nf">to_i</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">game</span> <span class="o">=</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Scraper</span><span class="p">.</span><span class="nf">scrape_nba_game_info</span><span class="p">(</span><span class="n">game</span><span class="p">)</span>
+        <span class="n">show_game</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>This method displays a little menu for the user to either ‘list games’ or type in the Game Number of the game they wish to see more information on. The input is ran through a conditional to make sure they are selecting a valid number (and not a random one) or wanting to see the list of games again.</p>
+
+<h1 id="show_game"><a href="#header-4"></a>#show_game</h1>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">def</span> <span class="nf">show_game</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+    <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">date</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">30</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">venue</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">55</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="nb">puts</span>
+
+    <span class="k">if</span> <span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">recap</span> <span class="o">!=</span> <span class="s2">""</span>
+      <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+        <span class="n">row</span> <span class="k">do</span>
+          <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">recap</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">80</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="nb">puts</span>
+    <span class="k">end</span>
+
+    <span class="n">header</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s1">'BOX SCORE'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">,</span> <span class="ss">:rule</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:color</span> <span class="o">=&gt;</span> <span class="s1">'red'</span><span class="p">,</span> <span class="ss">:bold</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+    <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'TEAM'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">25</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'QTR 1'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">9</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'QTR 2'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">9</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'QTR 3'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">9</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'QTR 4'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">9</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">status</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+      <span class="k">end</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">name</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">4</span><span class="p">])</span>
+        <span class="n">column</span><span class="p">(</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="nb">puts</span>
+    <span class="n">header</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="s1">'TOP PERFORMERS'</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">100</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">,</span> <span class="ss">:rule</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:color</span> <span class="o">=&gt;</span> <span class="s1">'green'</span><span class="p">,</span> <span class="ss">:bold</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+
+    <span class="n">table</span><span class="p">(</span><span class="ss">:border</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">away_team</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">''</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">home_team</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">points</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'POINTS'</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:points</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">points</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">rebounds</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'REBOUNDS'</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:rebounds</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">rebounds</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+      <span class="n">row</span> <span class="k">do</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">][</span><span class="mi">0</span><span class="p">].</span><span class="nf">assists</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s1">'ASSISTS'</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">name</span><span class="si">}</span><span class="s2">: </span><span class="si">#{</span><span class="no">NbaTodayGem</span><span class="o">::</span><span class="no">Game</span><span class="p">.</span><span class="nf">all</span><span class="p">[</span><span class="n">index</span><span class="p">].</span><span class="nf">top_peformers</span><span class="p">[</span><span class="ss">:assists</span><span class="p">][</span><span class="mi">1</span><span class="p">].</span><span class="nf">assists</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">:width</span> <span class="o">=&gt;</span> <span class="mi">35</span><span class="p">,</span> <span class="ss">:align</span> <span class="o">=&gt;</span> <span class="s1">'center'</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The #show_game method is responsible for using our CommandLineReporter Gem to display data in neatly organized tables and headers. For more info on how to use the Gem you can look through the wiki on their GitHub page. It was a pretty simple process of laying out columns and rows and plugging in the scraped data.</p>
+
+<p>When this is all wrapped up and executed through the bin file, you can get the latest NBA Scores through your terminal! I struggled a bit with this project but ending up with a fully functioning CLI made it so worth it in the end. I learned so much and I can’t wait to learn more in my future projects.</p>
+
+<p>Thanks for taking the time to check out my first Ruby Gem, I hope there was some information to help you get started on yours!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://localhost:4000/2017/05/01/getting-inquisitive-with-sql-queries" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://localhost:4000/2017/03/25/why-im-learning-software-dev" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

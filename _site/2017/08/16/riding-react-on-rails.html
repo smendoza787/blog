@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Building a React App With A Rails Backend! &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-08-16 15:16:01 -0700">August 16, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Building a React App With A Rails Backend!</h1>
+  <div class="post-line"></div>
+
+  <p>Coming up with a proper project idea to demonstrate my knowledge was pretty tough. I had so many ideas I wanted to implement, but for my final project I thought it would be sweet to pay a final homage of sorts to my current (soon-to-be-ex) career of bartending. I wanted to create something useful, and I wanted to be able to use at least <a href="https://developers.google.com/places/">one</a> (ended up using <a href="https://unsplash.com/developers">two</a>!) API of some sort.</p>
+
+<p>Through this project I was able to solidify a ton of concepts, and use some awesome new technologies, React and Redux.</p>
+
+<p>I decided to use the <a href="https://developers.google.com/places/">Google Places API</a> to gather information on the users current location, and display results for nearby Bars, Restaurants, and Dives to help users find their next spot to “turn up” at. ;)</p>
+
+<p>Simple? Of course. But I do plan on adding some algorithms to calculate the distance of the bar divided by the average prices of drinks at the establishment in order to find the best bang-for-your-buck place to drink. <em>Unfortunately,</em> I didn’t find an API specific enough to find the prices of menu items. Probably for good reason, drink prices can be as variable as gas prices in some places. But perhaps it would make an awesome project for the future.</p>
+
+<h2 id="planning">Planning</h2>
+
+<p>Before getting my hands dirty, I broke the project up into small, manageable tasks to get everything set up and running:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>- Set Up Rails API
+- Generate model for "Bars"
+- Set up React App (made easy using 'create-react-app')
+- Create NavBar, Main, BarsList, BarsPage, and BarsShow components
+- Find a way to get users current location and pass that as data to the Google Places API
+</code></pre>
+</div>
+
+<p>These were my initial goals of the project <em>just</em> to get everything started. I knew I wanted to implement <a href="http://redux.js.org/">Redux</a> eventually, but not until I got the initial complexities set up. We’ll get into that later.</p>
+
+<h1 id="the-railsy-stuff">The Railsy Stuff</h1>
+
+<p>The rails side of the project went amazingly smooth. I knew how to implement everything like migration files and controllers manually, but setting everything up was as easy as running <code class="highlighter-rouge">rails g scaffold Bars</code> and Rails magic prevailed and set up all the files I needed. I gave my bars simple properties like <code class="highlighter-rouge">name</code>, <code class="highlighter-rouge">address</code>, and <code class="highlighter-rouge">rating</code>.</p>
+
+<p>For fetching business information, I used a nifty little gem called <a href="https://github.com/qpowell/google_places">google_places</a>. This gem provided a Ruby wrapper around the Google Places API. I created a separate controller route: google_places, that would receive requests from the frontend.</p>
+
+<p>This worked out great. Any external API requests were made from my Rails server, and if I ever needed that information on the frontend I could just dispatch an action to Redux and have it fetch that data. Neat!</p>
+
+<h1 id="the-react-stuff">The React Stuff</h1>
+
+<p>By using <a href="https://github.com/facebookincubator/create-react-app">create-react-app</a>, I was able to bootstrap most of my app with a single command. All that was needed was to start creating presentational components. For the sake of adding in minimal styling later, I ended up using the <code class="highlighter-rouge">material-ui</code> <a href="https://www.npmjs.com/package/material-ui">npm-module</a> to import Material Design components into my app for a clean look.</p>
+
+<p>I created my navbar as a <code class="highlighter-rouge">material-ui</code> <code class="highlighter-rouge">AppBar</code>, and added cool-looking links in my sidebar (<code class="highlighter-rouge">BarsList</code>) in order to display the bars fetched from the Google Places API. I created a <code class="highlighter-rouge">Main</code> component that would be in charge of using <a href="https://github.com/ReactTraining/react-router">React Router</a> to switch out <code class="highlighter-rouge">Routes</code> of presentational components.</p>
+
+<p>In order to get the location of the users, I used the browser’s built-in <code class="highlighter-rouge">navigator</code> API and used its <code class="highlighter-rouge">getLocation()</code> method to get the <code class="highlighter-rouge">latitude</code> and <code class="highlighter-rouge">longitude</code> coordinates. I used those coordinates and sent them as a <code class="highlighter-rouge">POST</code> request to my <code class="highlighter-rouge">api/google_places</code> endpoint, which in turn made a <code class="highlighter-rouge">POST</code> request to the Google Places API and queried for bars around those coordinates. That data was then sent to my BarsList component which was in charge of rendering links for each Bar Route.</p>
+
+<p>My BarsShow component does most of the heavy lifting for each Bar. Its in charge of fetching a new photo from the Unsplash API (fetching photos from Google places was difficult without making a ton of requests to the API). Due to the nature of React Router, whenever a new bar was clicked and a new Route was rendered, the image would stay the same. I came up with a solution to compare the current barId params of the Route URL with the previous params with <code class="highlighter-rouge">componentDidUpdate()</code> and fetch a new photo whenever there was a difference.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kr">class</span> <span class="nx">BarsShow</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+  <span class="nx">componentDidMount</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">fetchPhoto</span><span class="p">()</span>
+  <span class="p">}</span>
+
+  <span class="nx">componentDidUpdate</span><span class="p">(</span><span class="nx">prevProps</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">match</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">barId</span> <span class="o">!==</span> <span class="nx">prevProps</span><span class="p">.</span><span class="nx">match</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">barId</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">fetchPhoto</span><span class="p">()</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">...</span>
+</code></pre>
+</div>
+
+<p>Google places provided a number rating for each business, but I wanted to implement a graphical rating. I used the rating number to <code class="highlighter-rouge">parseInt()</code> and translate that number into however many FontAwesome star components I wanted to display.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="nx">renderStars</span> <span class="o">=</span> <span class="p">(</span><span class="nx">rating</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">let</span> <span class="nx">numOfStars</span> <span class="o">=</span> <span class="nb">parseInt</span><span class="p">(</span><span class="nx">rating</span><span class="p">)</span>
+    <span class="kd">let</span> <span class="nx">faIcons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">numOfStars</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">faIcons</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="o">&lt;</span><span class="nx">FontAwesome</span> <span class="nx">name</span><span class="o">=</span><span class="s2">"star"</span> <span class="o">/&gt;</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">faIcons</span>
+  <span class="p">}</span>
+
+</code></pre>
+</div>
+
+<p>The real magic of the component comes alive when I had to figure out which bar to display, based on the route params:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>const mapStateToProps = (state, ownProps) =&gt; {
+  const bar = state.bars.find(bar =&gt; bar.id === ownProps.match.params.barId)
+  const comments = state.comments.filter(comment =&gt; comment.barId === ownProps.match.params.barId)
+
+  if (bar) {
+    return {
+      bar: bar,
+      comments: comments,
+      photo: state.photo
+    }
+  } else {
+    return { bar: {} }
+  }
+}
+</code></pre>
+</div>
+
+<p>Using Redux, I was able to keep all of the bar data in the state, and filter out the unneeded data based on the routes :barId params for whatever bar I wanted to display.</p>
+
+<p>Now would probably be a good time to talk about how I inserted Redux. After realizing my app was starting to get more complex, I knew I was going to need to access my app state across more of my components.</p>
+
+<p>Redux is awesome because I can keep my state all in one object, and query that object for that specific piece of state whenever I needed it.</p>
+
+<p>In order to delegate state, I created a few reducers, and imported them into my rootReducer which delegated the different pieces of state:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kr">export</span> <span class="k">default</span> <span class="nx">combineReducers</span><span class="p">({</span>
+  <span class="na">bars</span><span class="p">:</span> <span class="nx">barsReducer</span><span class="p">,</span>
+  <span class="na">comments</span><span class="p">:</span> <span class="nx">commentsReducer</span><span class="p">,</span>
+  <span class="na">photo</span><span class="p">:</span> <span class="nx">photoReducer</span>
+<span class="p">})</span>
+</code></pre>
+</div>
+<p>My main reducer being the barsReducer:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kr">export</span> <span class="k">default</span> <span class="p">(</span><span class="nx">state</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">action</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="k">switch</span> <span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">type</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="s1">'FETCH_BARS'</span><span class="p">:</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">)</span>
+    <span class="k">case</span> <span class="s1">'ADD_BAR'</span><span class="p">:</span>
+      <span class="kr">const</span> <span class="nx">bar</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">assign</span><span class="p">({},</span> <span class="nx">action</span><span class="p">.</span><span class="nx">payload</span><span class="p">,</span> <span class="p">{</span> <span class="na">id</span><span class="p">:</span> <span class="nx">state</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">})</span>
+      <span class="k">return</span> <span class="nx">state</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">bar</span><span class="p">)</span>
+    <span class="na">default</span><span class="p">:</span>
+      <span class="k">return</span> <span class="nx">state</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>This basically means, whenever I dispatch an action through an action creator, like ‘ADD_BAR’, create a new object with the new bar, and concat that onto the current state and return a new array containing all of the bars in my state, along with the new bar I just added.</p>
+
+<p>Here are a couple of my actionCreator functions for my bar resource:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kr">export</span> <span class="kd">function</span> <span class="nx">fetchBars</span><span class="p">()</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">(</span><span class="nx">dispatch</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">dispatch</span><span class="p">({</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'LOADING_BARS'</span> <span class="p">})</span>
+    <span class="k">return</span> <span class="nx">fetch</span><span class="p">(</span><span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nx">API_URL</span><span class="p">}</span><span class="sr">/bars`</span><span class="err">)
+</span>      <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">response</span> <span class="o">=&gt;</span> <span class="nx">response</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+      <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">bars</span> <span class="o">=&gt;</span> <span class="nx">dispatch</span><span class="p">({</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'FETCH_BARS'</span><span class="p">,</span> <span class="na">payload</span><span class="p">:</span> <span class="nx">bars</span> <span class="p">}))</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kr">export</span> <span class="kd">function</span> <span class="nx">addBar</span><span class="p">(</span><span class="nx">bar</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="na">type</span><span class="p">:</span> <span class="s1">'ADD_BAR'</span><span class="p">,</span>
+    <span class="na">payload</span><span class="p">:</span> <span class="nx">bar</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p>As you can, fetchBars() simply fetches the list of bars in my bars API, and addBar() dispatches an ADD_BAR action and passes along a payload of the newly created bar.</p>
+
+<p>With Redux, my actions and reducers were able to work together to provide the data I needed throughout my application, and helped my components be more modular and free of state management. I can’t wait to work on bigger projects to really reap the benefits of Redux as my projects become more complex.</p>
+
+<p>All in all I had an awesome time building this application, and I already have a ton of ideas to expand upon it:</p>
+
+<ul>
+  <li>Using Google Maps API to display maps of businesses</li>
+  <li>Perhaps using another API besides Google Places in order to get relevant photos. As beautiful as Unsplash photos are, I would like to see the actual bar photos. :)</li>
+  <li>Maybe even use the Twilio API to text friends which bar is going to be the meetup spot along with a link for directions</li>
+</ul>
+
+<p>This was a dope learning experience, and I can’t wait to see whats next. :)</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="http://localhost:4000/2017/07/24/adding-javascript-to-rails-app" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

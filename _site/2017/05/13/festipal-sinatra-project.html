@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Building A Sinatra App For Music Festivals &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-05-13 15:16:01 -0700">May 13, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Building A Sinatra App For Music Festivals</h1>
+  <div class="post-line"></div>
+
+  <h1 id="-a-web-app-for-keeping-track-of-your-favorite-music-festivals"><a href="#header-2"></a> A web app for keeping track of your favorite music festivals!</h1>
+<p>For my Sinatra project I decided to build something that I was interested in and passionate about.
+I built an app for keeping track of your favorite music festivals and their lineups.</p>
+
+<h1 id="-demo"><a href="#header-2"></a> Demo</h1>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/-9bKugZrx5k" frameborder="0" allowfullscreen=""></iframe>
+
+<p>A quick rundown of the technologies used in this project:</p>
+<ul>
+  <li>Ruby</li>
+  <li>Sinatra</li>
+  <li>Rack</li>
+  <li>ActiveRecord</li>
+  <li>SQL</li>
+  <li>Bootstrap</li>
+  <li>HTML</li>
+  <li>CSS</li>
+  <li>Heroku / PostgreSQL (for deployment)</li>
+</ul>
+
+<p>Learn did a great job of preparing me for a bigger Sinatra project by challenging me to build multiple Sinatra apps before appraoching this project (Playlister, “Fwitter”), So I had a pretty good general sense of what I was doing.</p>
+
+<h1 id="-database-planning"><a href="#header-2"></a> Database Planning</h1>
+
+<p>The first thing I wanted to do was plan out my database structure, and to do that, I knew I was going to have to figure out the associations between the objects I was creating.</p>
+
+<p>I wanted 3 main objects:</p>
+<ul>
+  <li>Festivals
+    <ul>
+      <li>has_many users</li>
+      <li>has_many artists</li>
+    </ul>
+  </li>
+  <li>Users
+    <ul>
+      <li>has_many festivals</li>
+    </ul>
+  </li>
+  <li>Artists
+    <ul>
+      <li>has_many festivals</li>
+    </ul>
+  </li>
+</ul>
+
+<p>I wanted everything to be centered around Festivals. You wouldn’t really “Create an Artist” unless you knew which festival they were going to be at. This is Festipal, not Artistpal or Spotify. We’ll go through the models and their associations more in the models section.</p>
+
+<p>In order to create the database tables I wanted, I ran the following migrations:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">CreateUsers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mi">5</span><span class="o">.</span><span class="mi">1</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:users</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:email</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:username</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:password_digest</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">CreateArtists</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mi">5</span><span class="o">.</span><span class="mi">1</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:artists</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:genre</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">CreateFestivals</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mi">5</span><span class="o">.</span><span class="mi">1</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:festivals</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">date</span> <span class="ss">:date</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:location</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">integer</span> <span class="ss">:created_by_user_id</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h1 id="-models"><a href="#header-2"></a> Models</h1>
+
+<p>The next step was creating the models for my project. This is where things got a little slippery because of my has_many, :through object associations.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Festival</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:location</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:date</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+
+  <span class="n">has_many</span> <span class="ss">:festival_artists</span>
+  <span class="n">has_many</span> <span class="ss">:artists</span><span class="p">,</span> <span class="ss">through: :festival_artists</span>
+  <span class="n">has_many</span> <span class="ss">:festival_users</span>
+  <span class="n">has_many</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">through: :festival_users</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Artist</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_many</span> <span class="ss">:festival_artists</span>
+  <span class="n">has_many</span> <span class="ss">:festivals</span><span class="p">,</span> <span class="ss">through: :festival_artists</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:username</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+
+  <span class="n">has_secure_password</span>
+
+  <span class="n">has_many</span> <span class="ss">:user_festivals</span>
+  <span class="n">has_many</span> <span class="ss">:festivals</span><span class="p">,</span> <span class="ss">through: :user_festivals</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>All of my associations worked as planned, except for my festival having many users. Users were allowed to have many festivals, but I wanted to implement a feature where you would be able to go to a festival page and see all of the users that were going to that specific festival. Unfortunately I kept running into errors that were requiring me to build multiple database tables, so I decided to forgo that part of the project, FOR NOW. I know I’ll be back later to fix it up. As a matter of fact I thought of a ton more features to add once I considered the project “complete”, lol.</p>
+
+<p>But here are the models I made for my has_many, :through objects associations:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FestivalArtist</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:festival</span>
+  <span class="n">belongs_to</span> <span class="ss">:artist</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">FestivalUser</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">belongs_to</span> <span class="ss">:user</span>
+  <span class="n">belongs_to</span> <span class="ss">:festival</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>#<a href="#header-2"></a> Controllers</p>
+
+<p>The controllers were probably the easiest part of the project for me, and also very repetitive. Every model has a new, edit, show and index page. While I did not make an index for users, like I said I wanted everything to be focused on the festivals.</p>
+
+<p>The most difficult part was probably figuring out the <code class="highlighter-rouge">flash</code> messages (the messages that flash once on a page when an action is completed). It took me awhile to figure out why some of my messages were not appearing, and it had to do with the number of redirects you sent to the client. If you set a flash[:message] and redirected to a certain page, then that page redirected you to ANOTHER page, the flash would “show” and dissappear on that first redirect. So by the time the app got to the next redirect the flash message would be gone.</p>
+
+<p>I was surprised the rack-flash gem had nothing about it in their documentation, but I ended up figuring it out in the end.</p>
+
+<p>In respect to not flooding this blog post with every line of code in my app, here is my <code class="highlighter-rouge">festival_controller</code> which is the beefiest one:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="k">class</span> <span class="nc">FestivalsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">logged_in?</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">else</span>
+      <span class="n">erb</span> <span class="ss">:'/festivals/index'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals/new'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="o">!</span><span class="n">logged_in?</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">else</span>
+      <span class="n">session</span><span class="p">[</span><span class="ss">:artist_num</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+      <span class="n">erb</span> <span class="ss">:'/festivals/new'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">post</span> <span class="s1">'/festivals'</span> <span class="k">do</span>
+    <span class="n">fest</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:festival</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">fest</span><span class="p">.</span><span class="nf">save</span>
+      <span class="n">fest</span><span class="p">.</span><span class="nf">created_by_user_id</span> <span class="o">=</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">id</span>
+      <span class="n">current_user</span><span class="p">.</span><span class="nf">festivals</span> <span class="o">&lt;&lt;</span> <span class="n">fest</span>
+      <span class="n">fest</span><span class="p">.</span><span class="nf">save</span>
+
+      <span class="n">params</span><span class="p">[</span><span class="ss">:new_artist</span><span class="p">].</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">artist_params</span><span class="o">|</span>
+        <span class="k">if</span> <span class="n">artist_params</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span> <span class="o">&amp;&amp;</span> <span class="n">artist_params</span><span class="p">[</span><span class="ss">:genre</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">""</span>
+          <span class="n">new_artist</span> <span class="o">=</span> <span class="n">fest</span><span class="p">.</span><span class="nf">artists</span><span class="p">.</span><span class="nf">find_or_create_by</span><span class="p">(</span><span class="n">artist_params</span><span class="p">)</span>
+
+          <span class="k">if</span> <span class="o">!</span><span class="n">new_artist</span><span class="p">.</span><span class="nf">save</span>
+            <span class="n">flash</span><span class="p">[</span><span class="ss">:error</span><span class="p">]</span> <span class="o">=</span> <span class="n">fest</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+
+            <span class="n">redirect</span> <span class="s1">'/festivals/new'</span>
+          <span class="k">end</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Successfully created festival."</span>
+
+      <span class="n">redirect</span> <span class="s2">"/festivals/</span><span class="si">#{</span><span class="n">fest</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:error</span><span class="p">]</span> <span class="o">=</span> <span class="n">fest</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+
+      <span class="n">redirect</span> <span class="s1">'/festivals/new'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals/:id'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">logged_in?</span>
+      <span class="vi">@festival</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="vi">@festival</span>
+        <span class="n">erb</span> <span class="ss">:'/festivals/show'</span>
+      <span class="k">else</span>
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Festival does not exist."</span>
+
+        <span class="n">redirect</span> <span class="s1">'/festivals'</span>
+      <span class="k">end</span>
+
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals/:id/edit'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">logged_in?</span>
+      <span class="vi">@festival</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="vi">@festival</span>
+        <span class="n">erb</span> <span class="ss">:'/festivals/edit'</span>
+      <span class="k">else</span>
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Festival does not exist."</span>
+
+        <span class="n">redirect</span> <span class="s1">'/festivals'</span>
+      <span class="k">end</span>
+
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals/:id/add'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">logged_in?</span>
+      <span class="vi">@festival</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="vi">@festival</span>
+        <span class="n">current_user</span><span class="p">.</span><span class="nf">festivals</span> <span class="o">&lt;&lt;</span> <span class="vi">@festival</span>
+
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You're going to </span><span class="si">#{</span><span class="vi">@festival</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">!"</span>
+
+        <span class="n">redirect</span> <span class="s2">"/festivals/</span><span class="si">#{</span><span class="vi">@festival</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">else</span>
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Festival does not exist."</span>
+
+        <span class="n">redirect</span> <span class="s1">'/festivals'</span>
+      <span class="k">end</span>
+
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">get</span> <span class="s1">'/festivals/:id/remove'</span> <span class="k">do</span>
+    <span class="k">if</span> <span class="n">logged_in?</span>
+      <span class="vi">@festival</span> <span class="o">=</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">festivals</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+      <span class="k">if</span> <span class="vi">@festival</span>
+        <span class="n">current_user</span><span class="p">.</span><span class="nf">festivals</span> <span class="o">-=</span> <span class="p">[</span><span class="vi">@festival</span><span class="p">]</span>
+
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You're not going to </span><span class="si">#{</span><span class="vi">@festival</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2"> anymore."</span>
+
+        <span class="n">redirect</span> <span class="s2">"/festivals/</span><span class="si">#{</span><span class="vi">@festival</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">else</span>
+        <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Cannot find festival in your festival list."</span>
+
+        <span class="n">redirect</span> <span class="s1">'/festivals'</span>
+      <span class="k">end</span>
+
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You must be logged in to do that."</span>
+
+      <span class="n">redirect</span> <span class="s1">'/login'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="n">patch</span> <span class="s1">'/festivals/:id'</span> <span class="k">do</span>
+    <span class="vi">@festival</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="vi">@festival</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:festival</span><span class="p">])</span>
+
+    <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Successfully updated festival."</span>
+
+    <span class="n">redirect</span> <span class="s2">"/festivals/</span><span class="si">#{</span><span class="vi">@festival</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+
+  <span class="n">delete</span> <span class="s1">'/festivals/:id'</span> <span class="k">do</span>
+    <span class="vi">@festival</span> <span class="o">=</span> <span class="no">Festival</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="vi">@festival</span><span class="p">.</span><span class="nf">delete</span>
+
+    <span class="n">flash</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Successfully deleted festival."</span>
+    <span class="n">redirect</span> <span class="s1">'/festivals'</span>
+  <span class="k">end</span>
+
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>#<a href="#header-2"></a> Views</p>
+
+<p>The views were probably my favorite part of the entire project. I’ve fooled around with HTML and CSS pretty frequently throughout my life and I really enjoy creating visual experiences.</p>
+
+<p>Each model had the corresponding files for the controller routes.</p>
+
+<ul>
+  <li>New</li>
+  <li>Edit</li>
+  <li>Index</li>
+  <li>Show</li>
+</ul>
+
+<p>I won’t go into too much detail about the views because it would probably be better for you to just look at the app yourself!</p>
+
+<p>Then came the process of pushing it to Heroku. It broke around 50 times when I first tried to deploy it. Luckily a fellow Learn student wrote a blog about the subject and luckily I was able to figure the rest out on my own!</p>
+
+<p>I had a lot of fun making this project and I can’t wait to learn Rails and build something even better.</p>
+
+<p>Thanks for reading!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://localhost:4000/2017/05/27/learning-4-new-languages" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://localhost:4000/2017/05/01/getting-inquisitive-with-sql-queries" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

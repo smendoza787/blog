@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Using Handlebars Templates &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="http://localhost:4000/about">About</a></li>
+          <li><a href="/">Posts</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-07-12 15:16:01 -0700">July 12, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Using Handlebars Templates</h1>
+  <div class="post-line"></div>
+
+  <p>As I’ve been going through the Javascript section of learn, I’ve been learning how to use a really neat JavaScript library called <a href="http://handlebarsjs.com/">Handlebars</a>.</p>
+
+<p>Handlebars is awesome because it allows you to create templates out of plain HTML and interpolate the variables you pass into the handlebars template using a JavaScript Object.</p>
+
+<p>Handlebars was a little tough to grasp at first because there was so much going on. I was able to understand it by breaking it down and realizing that everything should be extracted out into its own function to handle all of the handlebars magic.</p>
+
+<p>The first thing you need to worry about is creating the actual Handlebars template. Typically inserted as a script tag with an ID to grab the element later, and a type of “text/x-handlebars-template</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>  &lt;script id="template" type="text/x-handlebars-template"&gt;
+    &lt;div class="entry"&gt;
+      &lt;h1&gt;&lt;/h1&gt;
+      &lt;div class="body"&gt;
+        
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/script&gt;
+</code></pre>
+</div>
+
+<p>Now we’ve made a template but we’re not done yet. In order for the handlebars magic to take place, we need to grab the HTML string inside out script tag and compile it to a handlebars template by using Handlebars.compile.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">source</span>   <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s2">"#entry-template"</span><span class="p">).</span><span class="nx">html</span><span class="p">();</span>
+  <span class="kd">var</span> <span class="nx">template</span> <span class="o">=</span> <span class="nx">Handlebars</span><span class="p">.</span><span class="nx">compile</span><span class="p">(</span><span class="nx">source</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>Handlebars.compile() will take all of the HTML text in our template and compile it into a usable template and return it as a function.</p>
+
+<p>So we’re left with a <code class="highlighter-rouge">template()</code> function that we can pass an object to, and have those object properties passed into our template.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">context</span> <span class="o">=</span> <span class="p">{</span><span class="na">title</span><span class="p">:</span> <span class="s2">"My New Post"</span><span class="p">,</span> <span class="na">body</span><span class="p">:</span> <span class="s2">"This is my first post!"</span><span class="p">};</span>
+  <span class="kd">var</span> <span class="nx">html</span>    <span class="o">=</span> <span class="nx">template</span><span class="p">(</span><span class="nx">context</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>Our <code class="highlighter-rouge">html</code> variable will return:</p>
+
+<div class="language-html highlighter-rouge"><pre class="highlight"><code>  <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"entry"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>My New Post<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"body"</span><span class="nt">&gt;</span>
+      This is my first post!
+    <span class="nt">&lt;/div&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+</code></pre>
+</div>
+
+<p>Now then we can do whatever we please with our “blog post” template without having to manually concatenate with JavaScript!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="http://localhost:4000/2017/07/24/adding-javascript-to-rails-app" class="left arrow">&#8592;</a>
+  
+  
+    <a href="http://localhost:4000/2017/06/23/hyyker-rails-app" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
