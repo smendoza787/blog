@@ -1,15 +1,22 @@
 ---
 layout: post
 title: "About"
-author: "Chester"
+author: "Sergio"
 permalink: /about/
 ---
 
-A friend of mine writes short stories. One sunny day, I asked if he wanted a website to showcase his works and he agreed. I decided to use GitHub Pages to host his site. That way he wouldn't have to buy a domain and a server.
+Having been in the hospitality industry for the past 10 years, I'm proud to say that I've helped create thousands of memorable experiences for people. After falling in love with Web Development and learning how to build full stack web applications, I am having an amazing time transitioning my skills into creating beautiful and intuitive digital user experiences.
 
-While doing some research up on GitHub Pages, I accidentally chanced upon this _simple, blog-aware, static site generator_ called [Jekyll](https://jekyllrb.com/) which works really well with GitHub Pages. I figured it would do just fine for my friend and I set about searching for a pretty theme. I wanted a theme with a _book-ish_ vibe. Unfortunately, most of the themes were too modern. Eventually, I caved and begun working on my own theme. With the help of [Poole](https://github.com/poole/poole), the Jekyll Butler, I was able to build **Tale**.
+I've had an insatiable passion for technology for as long as I can remember. From creating custom MySpace layouts for friends in high-school, to creating my own custom Photoshop brushes for my Xanga page, my passions have always surrounded expressing my creativity in tech.
 
-## Contribute
-Feel free to create an issue or make a pull request on [GitHub](https://github.com/chesterhow/tale).
+Since then I've completed the Full Stack Web Developer program at the Flatiron School where I've developed skills in Ruby on Rails, SQL, JavaScript, React and Redux by building out personal projects that involve some of my other many hobbies.
 
-Thanks for reading!
+With my first developer job I am looking forward to deepening my knowledge of the React/Redux ecosystem, and working with an awesome team of developers to deliver a product that will solve real problems for real people.
+
+Check out my other projects below and get in touch!
+
+Email: [smendoza787@gmail.com](mailto:smendoza787@gmail.com)
+
+Github: [github.com/smendoza787](https://github.com/smendoza787)
+
+Twitter: [swergi0](https://twitter.com/swergi0)
