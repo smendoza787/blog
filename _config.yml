@@ -4,7 +4,7 @@ permalink:      /:year-:month-:day/:title
 # Setup
 title:          Do Or Dev
 paginate:       10
-baseurl:        "https://smendoza.me/blog"
+baseurl:        ""
 url:            "https://smendoza.me/blog"
 
 # Assets
