@@ -14,7 +14,7 @@ To start off this project I had the idea of building a CLI that was capable of g
 
 I created a simple CLI Gem called NBA Today that looks up and returns the latest NBA scores and game information all right through your terminal. For a quick video walk-through you can check it out below or click here to see the gem on RubyGems.org or here for the Github Repo
 
-[rubygem youtube VIDEO]
+<iframe width="560" height="315" src="https://www.youtube.com/embed/1lvJP-K0FPg" frameborder="0" allowfullscreen></iframe>
 
 # [](#header-3)Planning
 

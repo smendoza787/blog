@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Building a RESTful API with Node and Express.js &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-09-16 15:16:01 -0700">September 16, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Building a RESTful API with Node and Express.js</h1>
+  <div class="post-line"></div>
+
+  <p>Since I’ve graduated the full stack web developer program, I can’t help but have a wandering eye towards all the new and latest technologies. So far, I am most proficient in Ruby on Rails. I can get a quick API up and running, and I can even take advantage of Rails views to deliver a full stack app with Rails alone. But once I started using React on the front end of my projects, I realized how annoyingly slow it was to refresh and redirect the page to so many different routes. Which led me to doing more research on how to build applications using JavaScript throughout the entirety of an application. I learned that having JavaScript handle all of your front AND back end, your application could experience some major speed improvements! Okay enough talking, lets jump into the project.</p>
+
+<p>In this project we’re going to create a simple RESTful API for pets, because who doesn’t love doing another pet project amirite?</p>
+
+<p>If you’d like to refer to the finished project you can see it at https://github.com/smendoza787/node-express-pet-api</p>
+
+<p>Here are a list of tools we’ll be using throughout:</p>
+
+<ul>
+  <li>Node.js</li>
+  <li>MongoDB</li>
+  <li><a href="https://www.getpostman.com/">Postman</a></li>
+</ul>
+
+<p>This post is going to assume you have Node and MongoDB installed on your machine. If you are unsure, you can type <code class="highlighter-rouge">node -v</code> and <code class="highlighter-rouge">mongo --version</code> in your terminal and make sure you have at least some version of them installed, if not you can click <a href="https://nodejs.org/en/download/">here for Node</a> or <a href="https://docs.mongodb.com/getting-started/shell/installation/">here for MongoDB</a> and follow instructions for your platform.</p>
+
+<h1 id="getting-started">Getting Started</h1>
+
+<ol>
+  <li>Lets create a directory for our project by running <code class="highlighter-rouge">mkdir nodePetsApi</code> in our terminal</li>
+  <li>Navigate into our newly created directory with <code class="highlighter-rouge">cd nodePetsApi</code></li>
+  <li>create a new <code class="highlighter-rouge">package.json</code> by running <code class="highlighter-rouge">npm init</code>
+    <ul>
+      <li>The <code class="highlighter-rouge">package.json</code> file contains all of the metadata for our node application. More importantly, it holds all of the dependencies for our app. If you’re familiar with Ruby, its similar to a Gemfile.</li>
+      <li><code class="highlighter-rouge">npm init</code> will ask you for a series of inputs regarding the application such as the name, version, and a description of the application. Fill these out and hit enter when it prompts you if everything looks ok.</li>
+      <li>When you’re done you should have something like this:
+ <img src="https://i.imgur.com/m8WTcjz.png" alt="Imgur" />
+ You can go ahead and hit enter to create your package.json</li>
+    </ul>
+  </li>
+  <li>Create a <code class="highlighter-rouge">server.js</code> file by running <code class="highlighter-rouge">touch server.js</code>
+    <ul>
+      <li>This file will contain the protocol for running our server</li>
+    </ul>
+  </li>
+  <li>Create a folder named <code class="highlighter-rouge">api</code> - <code class="highlighter-rouge">mkdir api</code>
+    <ul>
+      <li>Inside this folder we’ll create 3 subfolders named <code class="highlighter-rouge">controllers models routes</code></li>
+      <li><code class="highlighter-rouge">mkdir api/controllers api/models api/routes</code></li>
+    </ul>
+  </li>
+  <li>Create <code class="highlighter-rouge">petController.js</code> in the <code class="highlighter-rouge">controllers</code> folder, <code class="highlighter-rouge">petRoutes.js</code> in the <code class="highlighter-rouge">routes</code> folder, and <code class="highlighter-rouge">petModel.js</code> in the <code class="highlighter-rouge">model</code> folder
+    <ul>
+      <li><code class="highlighter-rouge">touch api/controllers/petController.js api/routes/petRoutes.js api/models/petModel.js</code></li>
+    </ul>
+  </li>
+</ol>
+
+<p>So far, our file structure should look like this:</p>
+
+<p><img src="https://i.imgur.com/6B9q8dm.png" alt="Imgur" /></p>
+
+<h1 id="server-setup">Server Setup</h1>
+
+<p>Now we can install express and nodemon. Express will be used to create our server, while nodemon will help us keep track of changes we make to our files, and automatically restart the server on every save.</p>
+
+<p><code class="highlighter-rouge">npm install --save-dev nodemon</code></p>
+
+<p><code class="highlighter-rouge">npm install --save express</code></p>
+
+<p>This is going to add nodemon and express to our dependencies in our package.json.</p>
+
+<ol>
+  <li>Open package.json and add this task to our <code class="highlighter-rouge">scripts</code> section:
+    <ul>
+      <li><code class="highlighter-rouge">"start": "nodemon server.js"</code></li>
+    </ul>
+  </li>
+</ol>
+
+<p><img src="https://i.imgur.com/lPRrSze.png" alt="Imgur" /></p>
+
+<ol>
+  <li>Open server.js and type in the following:</li>
+</ol>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'express'</span><span class="p">),</span>
+      <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">(),</span>
+      <span class="nx">port</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span> <span class="o">||</span> <span class="mi">3000</span><span class="p">;</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">port</span><span class="p">);</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'pets API server started on: '</span> <span class="o">+</span> <span class="nx">port</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<ol>
+  <li>In your terminal, run <code class="highlighter-rouge">npm run start</code>. This will start the server, and you should see:</li>
+</ol>
+
+<p><code class="highlighter-rouge">pets API server started on: 3000</code></p>
+
+<h1 id="setting-up-the-schema">Setting up the schema</h1>
+
+<p>In order to setup our schema, we’re going to use <code class="highlighter-rouge">mongoose</code>, a Javascript library that will serve as an Object-Document Model (ODM) made specifically for MongoDB. The Schema that we create is going to serve as a blueprint for all of our future pet instances.</p>
+
+<p>Install mongoose by running the following on your terminal:</p>
+
+<p><code class="highlighter-rouge">npm install --save mongoose</code></p>
+
+<p>Once installed, type the following into <code class="highlighter-rouge">api/models/petModel.js</code>:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mongoose'</span><span class="p">);</span>
+  <span class="kd">var</span> <span class="nx">Schema</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Schema</span><span class="p">;</span>
+
+
+  <span class="kd">var</span> <span class="nx">PetSchema</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Schema</span><span class="p">({</span>
+    <span class="na">name</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+      <span class="na">required</span><span class="p">:</span> <span class="s1">'Please enter the name of your pet'</span>
+    <span class="p">},</span>
+    <span class="na">type</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+      <span class="na">required</span><span class="p">:</span> <span class="s1">'Please enter the type of your pet'</span>
+    <span class="p">},</span>
+    <span class="na">mood</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">type</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="na">type</span><span class="p">:</span> <span class="nb">String</span><span class="p">,</span>
+        <span class="na">enum</span><span class="p">:</span> <span class="p">[</span><span class="s1">'hungry'</span><span class="p">,</span> <span class="s1">'happy'</span><span class="p">,</span> <span class="s1">'sleepy'</span><span class="p">]</span>
+      <span class="p">}],</span>
+      <span class="na">default</span><span class="p">:</span> <span class="p">[</span><span class="s1">'happy'</span><span class="p">]</span>
+    <span class="p">},</span>
+    <span class="na">Created_date</span><span class="p">:</span> <span class="p">{</span>
+      <span class="na">type</span><span class="p">:</span> <span class="nb">Date</span><span class="p">,</span>
+      <span class="na">default</span><span class="p">:</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">now</span>
+    <span class="p">}</span>
+  <span class="p">});</span>
+
+  <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">'Pet'</span><span class="p">,</span> <span class="nx">PetSchema</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>In this file, we required mongoose and its Schema function in order to implement our Schema. Then we created a PetSchema, a new instance of mongoose.Schema, and instantiated it with an object whose properties will reflect one of our Pet models.</p>
+
+<p>Our pet Schema will consist of a <code class="highlighter-rouge">name</code> and a <code class="highlighter-rouge">type</code>, both of which are required Strings. It will also consist of a <code class="highlighter-rouge">mood</code> which enumerates between 3 different moods, but defaults to <code class="highlighter-rouge">happy</code> when first created. Lastly it will contain a Created_date which defaults to the time the document was created.</p>
+
+<p>Finally, in order to use our schema, we need to convert our <code class="highlighter-rouge">PetSchema</code> into a Model we can work with. We can do this by passing our schema into <code class="highlighter-rouge">mongoose.model(modelName, schema)</code>.</p>
+
+<h1 id="setting-up-our-routes">Setting up our routes</h1>
+
+<p>Routing refers to determining how an application responds to a client request to a particular endpoint, which is a URI (or path) and a specific HTTP request method (GET, POST, and so on).</p>
+
+<p>Each route can have one or more handler functions, which are executed when the route is matched.</p>
+
+<p>In your <code class="highlighter-rouge">api/routes/petRoutes.js</code> file, please type the following:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">app</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">pets</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'../controllers/petController'</span><span class="p">);</span>
+
+    <span class="c1">// pet Routes</span>
+    <span class="nx">app</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="s1">'/pets'</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">pets</span><span class="p">.</span><span class="nx">list_all_pets</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="nx">pets</span><span class="p">.</span><span class="nx">create_a_pet</span><span class="p">);</span>
+
+
+    <span class="nx">app</span><span class="p">.</span><span class="nx">route</span><span class="p">(</span><span class="s1">'/pets/:petId'</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">pets</span><span class="p">.</span><span class="nx">read_a_pet</span><span class="p">)</span>
+      <span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="nx">pets</span><span class="p">.</span><span class="nx">update_a_pet</span><span class="p">)</span>
+      <span class="p">.</span><span class="k">delete</span><span class="p">(</span><span class="nx">pets</span><span class="p">.</span><span class="nx">delete_a_pet</span><span class="p">);</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>We have defined two basic routes: <code class="highlighter-rouge">/pets</code> and <code class="highlighter-rouge">/pets/:petId</code> with different HTTP methods for each.</p>
+
+<ul>
+  <li>GET <code class="highlighter-rouge">/pets</code></li>
+  <li>POST <code class="highlighter-rouge">/pets</code></li>
+  <li>GET <code class="highlighter-rouge">/pets/:petId</code></li>
+  <li>PUT <code class="highlighter-rouge">/pets/:petId</code></li>
+  <li>DELETE <code class="highlighter-rouge">/pets/:petId</code></li>
+</ul>
+
+<p>We’ve also required the petController so each route has access to its own route handler function. The route handler function gets executed when the route is matched.</p>
+
+<h1 id="setting-up-the-controller">Setting up the controller</h1>
+
+<p>We’ll be defining the 5 route handler functions we mentioned in our <code class="highlighter-rouge">petRoutes.js</code> file. We’ll be using different mongoose methods to interact with the database, and we’ll be exporting each of these functions in order to <code class="highlighter-rouge">require</code> them in different parts of our app.</p>
+
+<p>Open <code class="highlighter-rouge">api/controllers/petController.js</code> and type the following:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mongoose'</span><span class="p">),</span>
+      <span class="nx">Pet</span> <span class="o">=</span> <span class="nx">mongoose</span><span class="p">.</span><span class="nx">model</span><span class="p">(</span><span class="s1">'Pet'</span><span class="p">);</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">list_all_pets</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Pet</span><span class="p">.</span><span class="nx">find</span><span class="p">({},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pet</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">pet</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">create_a_pet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">new_pet</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Pet</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">);</span>
+    <span class="nx">new_pet</span><span class="p">.</span><span class="nx">save</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pet</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">pet</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">read_a_pet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Pet</span><span class="p">.</span><span class="nx">findById</span><span class="p">(</span><span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">petId</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pet</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">pet</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">update_a_pet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Pet</span><span class="p">.</span><span class="nx">findOneAndUpdate</span><span class="p">({</span><span class="na">_id</span><span class="p">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">taskId</span><span class="p">},</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">,</span> <span class="p">{</span><span class="na">new</span><span class="p">:</span> <span class="kc">true</span><span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pet</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">(</span><span class="nx">pet</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+
+  <span class="nx">exports</span><span class="p">.</span><span class="nx">delete_a_pet</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">req</span><span class="p">,</span> <span class="nx">res</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">Task</span><span class="p">.</span><span class="nx">remove</span><span class="p">({</span>
+      <span class="na">_id</span><span class="p">:</span> <span class="nx">req</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">petId</span>
+    <span class="p">},</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pet</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">res</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">err</span><span class="p">);</span>
+      <span class="p">}</span>
+      <span class="nx">res</span><span class="p">.</span><span class="nx">json</span><span class="p">({</span> <span class="na">message</span><span class="p">:</span> <span class="s1">'Pet successfully deleted'</span> <span class="p">});</span>
+    <span class="p">});</span>
+  <span class="p">};</span>
+</code></pre>
+</div>
+
+<h1 id="putting-it-all-together">Putting it all together</h1>
+
+<p>Earlier, we set up our <code class="highlighter-rouge">server.js</code> file with minimal code to get it up and running. Now we’ll connect our handlers(controllers), database, models, and routes together.</p>
+
+<p>In order to use <code class="highlighter-rouge">body-parser</code>, we’ll have to install it with npm first:</p>
+
+<p><code class="highlighter-rouge">npm install --save body-parser</code></p>
+
+<p>Make sure your <code class="highlighter-rouge">server.js</code> file looks like the following, afterwards we’ll go over the changes we made:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">express</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'express'</span><span class="p">),</span>
+      <span class="nx">app</span> <span class="o">=</span> <span class="nx">express</span><span class="p">(),</span>
+      <span class="nx">port</span> <span class="o">=</span> <span class="nx">process</span><span class="p">.</span><span class="nx">env</span><span class="p">.</span><span class="nx">PORT</span> <span class="o">||</span> <span class="mi">3000</span><span class="p">,</span>
+      <span class="nx">mongoose</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'mongoose'</span><span class="p">),</span>
+      <span class="nx">Pet</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./api/models/petModel'</span><span class="p">),</span>
+      <span class="nx">bodyParser</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'body-parser'</span><span class="p">);</span>
+
+  <span class="c1">// mongoose instance connection url connection</span>
+  <span class="nx">mongoose</span><span class="p">.</span><span class="nx">Promise</span> <span class="o">=</span> <span class="nx">global</span><span class="p">.</span><span class="nx">Promise</span><span class="p">;</span>
+  <span class="nx">mongoose</span><span class="p">.</span><span class="nx">connect</span><span class="p">(</span><span class="s1">'mongodb://localhost/Petdb'</span><span class="p">,</span> <span class="p">{</span> <span class="na">useMongoClient</span><span class="p">:</span> <span class="kc">true</span> <span class="p">});</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">urlencoded</span><span class="p">({</span> <span class="na">extended</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}));</span>
+  <span class="nx">app</span><span class="p">.</span><span class="nx">use</span><span class="p">(</span><span class="nx">bodyParser</span><span class="p">.</span><span class="nx">json</span><span class="p">());</span>
+
+  <span class="kd">var</span> <span class="nx">routes</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s1">'./api/routes/petRoutes'</span><span class="p">);</span> <span class="c1">//importing route</span>
+  <span class="nx">routes</span><span class="p">(</span><span class="nx">app</span><span class="p">);</span> <span class="c1">//register the route</span>
+
+  <span class="nx">app</span><span class="p">.</span><span class="nx">listen</span><span class="p">(</span><span class="nx">port</span><span class="p">);</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">'pets API server started on: '</span> <span class="o">+</span> <span class="nx">port</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<ul>
+  <li>
+    <p>First we loaded up mongoose in order to connect it to our mongoDB database that will run on <code class="highlighter-rouge">localhost/Petdb</code>.</p>
+  </li>
+  <li>
+    <p>Then we required our Pet model that we set up in <code class="highlighter-rouge">api/models/petModel</code>.</p>
+  </li>
+  <li>Next we required body-parser in order to parse incoming requests. Then we applied it as middleware to our app by using <code class="highlighter-rouge">app.use()</code> before registering our routes.</li>
+  <li>Finally we required the routes function that holds all of our route handler functions, and executed that function while passing in our <code class="highlighter-rouge">app</code></li>
+</ul>
+
+<h1 id="starting-up-our-mongodb-database">Starting up our MongoDB database</h1>
+
+<ol>
+  <li>Open up a new terminal (cmd + T on Mac), and run <code class="highlighter-rouge">mongod</code> in  your terminal
+    <ul>
+      <li><code class="highlighter-rouge">mongod</code> is the Mongo Daemon, it is essentially the host process for the database. It essentially says, start the MongoDB process and run it in the background.</li>
+    </ul>
+  </li>
+  <li>Open up <em>another</em> terminal and run <code class="highlighter-rouge">mongo</code>, this opens up the Mongo shell in order to connect to an instance of MongoDB. In the prompt, type <code class="highlighter-rouge">use Petdb</code> which will create a new database collection named <code class="highlighter-rouge">Petdb</code></li>
+</ol>
+
+<p>Now go to your browser and visit <code class="highlighter-rouge">http://localhost:3000/pets</code>. If you see an empty array <code class="highlighter-rouge">[]</code> that means we’re up and running! We only see an empty array because we haven’t added anything to the database. Lets do that now with Postman.</p>
+
+<h1 id="testing-with-postman">Testing with Postman</h1>
+
+<p>Now that everything is connected, we can use a simple tool called Postman in order to send requests to our API and pass along any parameters we need to create a new Pet instance.</p>
+
+<ol>
+  <li>Open up Postman, change the method to ‘POST’, and enter <code class="highlighter-rouge">http://localhost:3000/pets</code> in the URL field</li>
+  <li>Click the ‘body’ tab and select ‘x-www-form-urlencoded’</li>
+  <li>In the first key field, type in <code class="highlighter-rouge">name</code> and give your pet a name</li>
+  <li>In the second key field, type in <code class="highlighter-rouge">type</code> and state what type of pet you’re entering</li>
+  <li>Click Send</li>
+</ol>
+
+<p>We should get a response with the JSON object of our newly created pet!</p>
+
+<p><img src="https://i.imgur.com/mNJMJCV.png" alt="Imgur" /></p>
+
+<p>Notice how our pet was created with a default mood of <code class="highlighter-rouge">happy</code>, but we could have created it with any of our other moods as well.</p>
+
+<p><img src="https://i.imgur.com/Zm9wuSA.png" alt="Imgur" /></p>
+
+<p>Now when we send a GET request to <code class="highlighter-rouge">http://localhost/pets</code> we should get a list of our created pets.</p>
+
+<p>And thats it! I hope you learned something from reading this tutorial, as much as I learned from making it! :)</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/08/16/riding-react-on-rails" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
