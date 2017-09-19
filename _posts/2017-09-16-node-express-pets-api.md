@@ -11,7 +11,7 @@ Since I've graduated the full stack web developer program, I can't help but have
 
 In this project we're going to create a simple RESTful API for pets, because who doesn't love doing another pet project amirite?
 
-If you'd like to refer to the finished project you can see it at https://github.com/smendoza787/node-express-pet-api
+If you'd like to refer to the finished project you can see it [here](https://github.com/smendoza787/node-express-pet-api)
 
 Here are a list of tools we'll be using throughout:
 
