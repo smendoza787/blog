@@ -9,7 +9,7 @@ date: '2017-09-20 16:16:01 -0600'
 
 Closures are something we are sure to encounter everyday in our JavaScript programs. So I wanted to come up with a simple and practical example to get an idea of what a closure is, and how you would use it.
 
-## What is a closure?
+# What is a closure?
 
 Here are a few different definitions of closure I came across, to really drill into your head what a closure is defined as:
 
@@ -19,9 +19,9 @@ Here are a few different definitions of closure I came across, to really drill i
 
 - A closure is an inner function that has access to the outer functions variables.
 
-A closure has access to 3 different scopes; its own scope and variables, its enclosing functions scope and variables, and the global scope and its variables. The closure also has access to the outer function's argument parameters as well.
+A closure has access to 3 different scopes; its own scope and variables, its enclosing function's scope and variables, and the global scope and its variables. The closure also has access to the outer function's argument parameters as well.
 
-## How to create a closure
+# How to create a closure
 
 Let's create a simple example of a closure. Let's say you're at a delicious Mexican restaurant, and we need a function that will return another function with access to the outer functions scope
 
