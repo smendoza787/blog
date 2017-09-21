@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Understanding Closures in JavaScript (With Delicious Mexican Food) &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-09-20 15:16:01 -0700">September 20, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Understanding Closures in JavaScript (With Delicious Mexican Food)</h1>
+  <div class="post-line"></div>
+
+  <p>Closures are something we are sure to encounter everyday in our JavaScript programs. So I wanted to come up with a simple and practical example to get an idea of what a closure is, and how you would use it.</p>
+
+<h2 id="what-is-a-closure">What is a closure?</h2>
+
+<p>Here are a few different definitions of closure I came across, to really drill into your head what a closure is defined as:</p>
+
+<ul>
+  <li>
+    <p>A closure is when a function is able to remember and access its lexical scope even when that function is executing outside its lexical scope.</p>
+  </li>
+  <li>
+    <p>A closure is the combination of a function and the lexical environment within which that function was authored.</p>
+  </li>
+  <li>
+    <p>A closure is an inner function that has access to the outer functions variables.</p>
+  </li>
+</ul>
+
+<p>A closure has access to 3 different scopes; its own scope and variables, its enclosing functions scope and variables, and the global scope and its variables. The closure also has access to the outer function’s argument parameters as well.</p>
+
+<h2 id="how-to-create-a-closure">How to create a closure</h2>
+
+<p>Let’s create a simple example of a closure. Let’s say you’re at a delicious Mexican restaurant, and we need a function that will return another function with access to the outer functions scope</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">function</span> <span class="nx">takeOrder</span><span class="p">(</span><span class="nx">mexicanDish</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">orderCall</span> <span class="o">=</span> <span class="s2">"Here is your "</span> <span class="o">+</span> <span class="nx">mexicanDish</span> <span class="o">+</span> <span class="s2">" with "</span><span class="p">;</span>
+
+  <span class="kd">function</span> <span class="nx">insertIngredient</span><span class="p">(</span><span class="nx">mainIngredient</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">orderCall</span> <span class="o">+</span> <span class="nx">mainIngredient</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">insertIngredient</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kd">var</span> <span class="nx">steakBurrito</span> <span class="o">=</span> <span class="nx">takeOrder</span><span class="p">(</span><span class="s1">'burrito'</span><span class="p">);</span>
+
+<span class="nx">steakBurrito</span><span class="p">(</span><span class="s1">'steak'</span><span class="p">);</span> <span class="c1">// "Here is your burrito with steak"</span>
+</code></pre>
+</div>
+
+<p>When we first call our <code class="highlighter-rouge">takeOrder()</code> function, we are passing it an argument of the type of mexican food we want. This can be anything they offer; a taco, burrito, quesadilla…. you get the idea.</p>
+
+<p>The point is, when we call <code class="highlighter-rouge">takeOrder('burrito')</code>, it returns to us a function, <code class="highlighter-rouge">insertIngredient()</code>. We set this equal to a variable, that we will invoke later, named <code class="highlighter-rouge">steakBurrito</code>, because that’s what our final order will look like. So you can imagine that our variable, <code class="highlighter-rouge">steakBurrito</code>, is really just the <code class="highlighter-rouge">insertIngredient()</code> function in disguise, waiting to be called with a mainIngredient.</p>
+
+<p>Before we call that function, we can observe that the inner function, <code class="highlighter-rouge">insertIngredient()</code>, is holding on to a variable <code class="highlighter-rouge">orderCall</code> that was written in our outer function, <code class="highlighter-rouge">takeOrder()</code>.</p>
+
+<p>We finally call <code class="highlighter-rouge">steakBurrito()</code> and pass in the main ingredient of <code class="highlighter-rouge">'steak'</code>, which results in our function logging out our final <code class="highlighter-rouge">orderCall</code>.</p>
+
+<p>In some languages, this would have returned an error, because we technically already invoked and ran <code class="highlighter-rouge">takeOrder()</code> when we assigned it to our variable and it shouldn’t be available anymore because the function finished its execution. But thanks to the magic of closures in JavaScript, our little inner function is still holding on for dear life to the variable in the outer function. And that’s essentially what a closure is!</p>
+
+<p>For clarity, and because I’m still pretty hungry, we can also order a chicken taco!</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">chickenTaco</span> <span class="o">=</span> <span class="nx">takeOrder</span><span class="p">(</span><span class="s1">'taco'</span><span class="p">);</span>
+<span class="nx">chickenTaco</span><span class="p">(</span><span class="s1">'chicken'</span><span class="p">);</span> <span class="c1">// "Here is your taco with chicken"</span>
+</code></pre>
+</div>
+
+<p>There are a ton of practical uses for closures, and more complex ways to implement them. This was just a simple example that helped me identify what a closure is at the basic level. Hopefully this can push someone over the hump, and into the a-ha moment of understanding closures in JavaScript!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/09/16/node-express-pets-api" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
