@@ -4,7 +4,7 @@ layout: post
 title: "Going Up With Higher Order Functions"
 author: "Sergio"
 permalink: /2017/10/02/higher-order-functions
-date: '2016-10-02 16:16:01 -0600'
+date: '2017-10-02 16:16:01 -0600'
 ---
 
 Ever since I've been getting a firm grip on JavaSscript as a language, I've made it a point to read up more on the intricacies of the languages. Everyone knows about functions in JavaScript, and I always assumed the only 'function' they had was encapsulating blocks of code so they are easily called somewhere else. I guess that's a sky-high overview of what they are, but then I learned that functions are treated as _First Class Objects_.
