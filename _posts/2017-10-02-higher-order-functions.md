@@ -32,7 +32,7 @@ We'll be working with an array of `pets` to demonstrate each of these functions:
 
 ## Array.prototype.map()
 
-JavaScript provides us with a function `map` that comes standared on the Array.prototype. Map will take in a callback function as a parameter, and call that function on each element of the array that `map` is initially called on.
+JavaScript provides us with a function `map` that comes standard on the Array.prototype. Map will take in a callback function as a parameter, and call that function on each element of the array that `map` is initially called on.
 
 What does this callback function look like? Well it takes in a `element` parameter and 2 optional parameters, `index, array`. `element` being the 'current element' that is being iterated over, `index` representing the current index of the `element` being looped over, and `array` representing the entire array that `map` was originally called on.
 
@@ -104,6 +104,6 @@ Let's try adding up the ages of our pets:
   console.log(combinedPetAges);
   // 26
 ```
-For out `combinedPetAges` value, we first `map` the `pets` array into an array of pet ages, then we chain on a reduce to work on that return value, which takes the first age in the array (since we did not provide an initial value), and combines it with the next age. The value returned from that function shows up in the next function that is called, as the `prev` argument. This process continues until all values in the list have recieved that callback function, which results in all of our pet ages added up into the final returned value of `26`.
+For out `combinedPetAges` value, we first `map` the `pets` array into an array of pet ages, then we chain on a reduce to work on that return value, which takes the first age in the array (since we did not provide an initial value), and combines it with the next age. The value returned from that function shows up in the next function that is called, as the `prev` argument. This process continues until all values in the list have received that callback function, which results in all of our pet ages added up into the final returned value of `26`.
 
 *Higher Order Functions* and the concept of *First Class Objects* allow us to include functions along with primitive values into our programs, creating more complex and elegant-looking code. We have the ability to pass around, manipulate, and return functions as values to be used by _other_ functions in our programs. These tools are extremely powerful, and hopefully this little post taught you something and will enable you to create more sophisticated programs. :)
