@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Going Up With Higher Order Functions &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2016-10-02 15:16:01 -0700">October 02, 2016</time>
+    
+  </div>
+
+  <h1 class="post-title">Going Up With Higher Order Functions</h1>
+  <div class="post-line"></div>
+
+  <p>Ever since I’ve been getting a firm grip on JavaSscript as a language, I’ve made it a point to read up more on the intricacies of the languages. Everyone knows about functions in JavaScript, and I always assumed the only ‘function’ they had was encapsulating blocks of code so they are easily called somewhere else. I guess that’s a sky-high overview of what they are, but then I learned that functions are treated as <em>First Class Objects</em>.</p>
+
+<p>What are First Class Objects and how are they treated in JavaScript, you ask? <em>First Class Objects</em> in JavaScript support all the operational properties inherent to other entities; properties such as being able to be assigned to a variable, passed around as a function argument, returned from a function, etc. Essentially, being a First Class Object in JavaScript means you are able to do what <em>any object</em> in JavaScript can do. Objects like Strings, Integers, Arrays, etc.</p>
+
+<p>With that in mind, we can take a deeper look at <em>Higher Order Functions</em> in JavaScript. HOF allow us to get rid of all the verbose for/while loops we see all over the place, and replace it with terser, more succinct code.</p>
+
+<p>We’ll look at 3 Higher Order Functions in particular, provided by the JS language:</p>
+
+<ul>
+  <li>Map</li>
+  <li>Filter</li>
+  <li>Reduce</li>
+</ul>
+
+<p>We’ll be working with an array of <code class="highlighter-rouge">pets</code> to demonstrate each of these functions:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kr">const</span> <span class="nx">pets</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span> <span class="na">name</span><span class="p">:</span> <span class="s1">'Cosmo'</span><span class="p">,</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'dog'</span><span class="p">,</span> <span class="na">age</span><span class="p">:</span> <span class="mi">10</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="na">name</span><span class="p">:</span> <span class="s1">'Olive'</span><span class="p">,</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'dog'</span><span class="p">,</span> <span class="na">age</span><span class="p">:</span> <span class="mi">3</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="na">name</span><span class="p">:</span> <span class="s1">'Rocket'</span><span class="p">,</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'cat'</span><span class="p">,</span> <span class="na">age</span><span class="p">:</span> <span class="mi">1</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="na">name</span><span class="p">:</span> <span class="s1">'Scaredy'</span><span class="p">,</span> <span class="na">type</span><span class="p">:</span> <span class="s1">'cat'</span><span class="p">,</span> <span class="na">age</span><span class="p">:</span> <span class="mi">12</span> <span class="p">}</span>
+  <span class="p">];</span>
+</code></pre>
+</div>
+
+<h2 id="arrayprototypemap">Array.prototype.map()</h2>
+
+<p>JavaScript provides us with a function <code class="highlighter-rouge">map</code> that comes standared on the Array.prototype. Map will take in a callback function as a parameter, and call that function on each element of the array that <code class="highlighter-rouge">map</code> is initially called on.</p>
+
+<p>What does this callback function look like? Well it takes in a <code class="highlighter-rouge">element</code> parameter and 2 optional parameters, <code class="highlighter-rouge">index, array</code>. <code class="highlighter-rouge">element</code> being the ‘current element’ that is being iterated over, <code class="highlighter-rouge">index</code> representing the current index of the <code class="highlighter-rouge">element</code> being looped over, and <code class="highlighter-rouge">array</code> representing the entire array that <code class="highlighter-rouge">map</code> was originally called on.</p>
+
+<p>Let’s say that we want to use our <code class="highlighter-rouge">pets</code> array and create a new array that consisted of the names of our <code class="highlighter-rouge">pets</code>.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">namesOfPets</span> <span class="o">=</span> <span class="nx">pets</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">namesOfPets</span><span class="p">);</span>
+  <span class="c1">// ["Cosmo", "Olive", "Rocket", "Scaredy"]</span>
+</code></pre>
+</div>
+
+<p>Map is taking in our callback (<code class="highlighter-rouge">pet =&gt; pet.name</code>) and calling that function on each object in our <code class="highlighter-rouge">pets</code> array, and telling it to only return the <code class="highlighter-rouge">name</code> of the pet, instead of the entire pet object.</p>
+
+<p>We could have also asked for a different attribute of each pet to create a different array:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">agesOfPets</span> <span class="o">=</span> <span class="nx">pets</span><span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">age</span><span class="p">);</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">agesOfPets</span><span class="p">);</span>
+  <span class="c1">// [10, 3, 1, 12]</span>
+</code></pre>
+</div>
+
+<p>Conversely, if we had just used the callback (<code class="highlighter-rouge">pet =&gt; pet</code>), it would have returned the entire pet object, resulting in the exact same array.</p>
+
+<h2 id="arrayprototypefilter">Array.prototype.filter()</h2>
+
+<p>Another function provided to us by the <code class="highlighter-rouge">Array.prototype</code> is <code class="highlighter-rouge">filter</code>. Filter is used when we have an array of items that we want to ‘filter’ into a new array of items that each pass the test of the callback we provide it. Filter is applied to an array, and uses a callback function that returns true or false to determine which items from the original array will make it into the newly created array.</p>
+
+<p>Lets say we wanted a new list of pets that filters out the older, more senior pets from the younger ones. And just to use a new function we just learned about, lets map the resulting array of older pets to just include the <code class="highlighter-rouge">name</code> of each pet:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">seniorPetNames</span> <span class="o">=</span> <span class="nx">pets</span>
+    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">age</span> <span class="o">&gt;</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+
+  <span class="kd">var</span> <span class="nx">youngerPetNames</span> <span class="o">=</span> <span class="nx">pets</span>
+    <span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">age</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">seniorPetNames</span><span class="p">);</span>
+  <span class="c1">// ["Cosmo", "Scaredy"]</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">youngerPetNames</span><span class="p">);</span>
+  <span class="c1">// ["Olive", "Rocket"]</span>
+</code></pre>
+</div>
+
+<p>Our <code class="highlighter-rouge">seniorPetNames</code> variable initially calls <code class="highlighter-rouge">pets.filter</code> and returns a list of <code class="highlighter-rouge">pet</code> objects that pass the test of <code class="highlighter-rouge">pet.age &gt; 8</code>, but that returns a weird looking list of objects (which might be what you want, in some cases), but for readability we chain a <code class="highlighter-rouge">map</code> function onto that list of pets and specify that we only want the <code class="highlighter-rouge">name</code>s of each of the pets that passed the initial test in the new array.</p>
+
+<p><code class="highlighter-rouge">filter</code> gives us a simple and readable way of transforming an array of items, into an array of items whose properties pass the test we give it via a callback function.</p>
+
+<h2 id="arrayprototypereduce">Array.prototype.reduce()</h2>
+
+<p>The last and slightly more involved HOF we’ll talk about is <code class="highlighter-rouge">reduce</code>. Reduce takes the callback function to apply to each item in the array, and an optional initial value to <code class="highlighter-rouge">reduce</code> each value into. If an initial value is not provided, the first item in the array is used.</p>
+
+<p>The callback function provided takes in 2 arguments, the <code class="highlighter-rouge">prev</code> value which was returned from the previous item in the list, and the <code class="highlighter-rouge">curr</code> current item being iterated over.</p>
+
+<p>The most classic use case would be using a Math function to add/subtract/etc. each of the values down to a single numeric value.</p>
+
+<p>Let’s try adding up the ages of our pets:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kd">var</span> <span class="nx">combinedPetAges</span> <span class="o">=</span> <span class="nx">pets</span>
+    <span class="c1">// first convert array of pet objects into an array of pet ages</span>
+    <span class="p">.</span><span class="nx">map</span><span class="p">(</span><span class="nx">pet</span> <span class="o">=&gt;</span> <span class="nx">pet</span><span class="p">.</span><span class="nx">age</span><span class="p">)</span>
+    <span class="c1">// reduce pet ages into an initial value, since we didn't provide one reduce will use the first item in the array</span>
+    <span class="p">.</span><span class="nx">reduce</span><span class="p">((</span><span class="nx">prev</span><span class="p">,</span> <span class="nx">curr</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">prev</span> <span class="o">+</span> <span class="nx">curr</span><span class="p">)</span>
+
+  <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">combinedPetAges</span><span class="p">);</span>
+  <span class="c1">// 26</span>
+</code></pre>
+</div>
+<p>For out <code class="highlighter-rouge">combinedPetAges</code> value, we first <code class="highlighter-rouge">map</code> the <code class="highlighter-rouge">pets</code> array into an array of pet ages, then we chain on a reduce to work on that return value, which takes the first age in the array (since we did not provide an initial value), and combines it with the next age. The value returned from that function shows up in the next function that is called, as the <code class="highlighter-rouge">prev</code> argument. This process continues until all values in the list have recieved that callback function, which results in all of our pet ages added up into the final returned value of <code class="highlighter-rouge">26</code>.</p>
+
+<p><em>Higher Order Functions</em> and the concept of <em>First Class Objects</em> allow us to include functions along with primitive values into our programs, creating more complex and elegant-looking code. We have the ability to pass around, manipulate, and return functions as values to be used by <em>other</em> functions in our programs. These tools are extremely powerful, and hopefully this little post taught you something and will enable you to create more sophisticated programs. :)</p>
+
+
+</div>
+
+<div class="pagination">
+  
+    <a href="https://smendoza.me/blog/2016/10/11/late-nights-early-mornings" class="left arrow">&#8592;</a>
+  
+  
+    <a href="https://smendoza.me/blog/2016/10/01/dear-future-self" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
