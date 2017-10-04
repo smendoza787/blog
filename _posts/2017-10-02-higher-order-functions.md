@@ -7,7 +7,7 @@ permalink: /2017/10/02/higher-order-functions
 date: '2017-10-02 16:16:01 -0600'
 ---
 
-Ever since I've been getting a firm grip on JavaSscript as a language, I've made it a point to read up more on the intricacies of the languages. Everyone knows about functions in JavaScript, and I always assumed the only 'function' they had was encapsulating blocks of code so they are easily called somewhere else. I guess that's a sky-high overview of what they are, but then I learned that functions are treated as _First Class Objects_.
+Ever since I've been getting a firm grip on JavaScript as a language, I've made it a point to read up more on the intricacies of the languages. Everyone knows about functions in JavaScript, and I always assumed the only 'function' they had was encapsulating blocks of code so they are easily called somewhere else. I guess that's a sky-high overview of what they are, but then I learned that functions are treated as _First Class Objects_.
 
 What are First Class Objects and how are they treated in JavaScript, you ask? *First Class Objects* in JavaScript support all the operational properties inherent to other entities; properties such as being able to be assigned to a variable, passed around as a function argument, returned from a function, etc. Essentially, being a First Class Object in JavaScript means you are able to do what _any object_ in JavaScript can do. Objects like Strings, Integers, Arrays, etc.
 
