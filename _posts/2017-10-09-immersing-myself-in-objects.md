@@ -20,6 +20,8 @@ You can split this group of data types into 2 groups: complex and primitive. Pri
 
 All data types besides Objects are considered primitive data types. Today I want to focus on the most fundamental, most used and only complex data type in JavaScript; the Object.
 
+![blocks](https://media.giphy.com/media/MvovQGsMBY9H2/giphy.gif)
+
 ## What is an Object?
 
 At a fundamental level, you can think of an object in JavaScript much like an object in real life.
@@ -65,6 +67,8 @@ For example, if we were making a hi-tech coffee mug that knew how to brew its ow
 
 We can now call `coffeeMug.brewCoffee()` to execute the method from our `coffeeMug` object.
 
+![coffee](https://media.giphy.com/media/3oEjI1JmchoJMbIJYQ/giphy.gif)
+
 ## Creating Objects
 
 There are 2 common ways to create an object:
@@ -91,6 +95,8 @@ The easiest way to create an object is by using literal brackets when defining y
 
 As you can see, the `books` variable refers to an empty object, while the `banana` variable refers to an object complete with properties and methods already defined inside. That banana has some personality!
 
+![banana](https://media.giphy.com/media/yAqdjThdDEMF2/giphy.gif)
+
 ### Object Constructors
 
 Another way to create objects is by using the **Object Constructor** function. It's a function that is used for initializing new objects, and is generally used with the `new` keyword.
@@ -109,6 +115,8 @@ Even with object literals, we would have to define each new fruit object with it
 ## Patterns
 
 Some very smart people have worked on solutions for dealing with repetitive tasks involving objects, so they devised a set of _patterns_ for dealing with the creation of multiple objects.
+
+![pattern](https://media.giphy.com/media/3o85gd3noLuSkE4Lkc/giphy.gif)
 
 ### Constructor Pattern
 
@@ -202,3 +210,5 @@ Let's say you have an object `kiwi` that was created from a `Fruit()` constructo
 In this kiwi's case, `howManySeeds` would be the `kiwi`'s **own property** as opposed to `showName` which is a property that `kiwi` inherited from the `Fruit` prototype.
 
 This was a brief overview of the key parts of working with objects in JavaScript. Hopefully this provided a decent explanation of what an object is, and how you can start working with them and harnessing their powerful features.
+
+![powerful](https://media.giphy.com/media/13ExF2qUe1ZUbe/giphy.gif)
