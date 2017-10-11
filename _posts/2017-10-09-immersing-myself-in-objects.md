@@ -20,7 +20,9 @@ You can split this group of data types into 2 groups: complex and primitive. Pri
 
 All data types besides Objects are considered primitive data types. Today I want to focus on the most fundamental, most used and only complex data type in JavaScript; the Object.
 
-<img align="center" src="https://media.giphy.com/media/MvovQGsMBY9H2/giphy.gif" alt="objects">
+<p align="center">
+  <img height="300" src="https://media.giphy.com/media/MvovQGsMBY9H2/giphy.gif" alt="objects">
+</p>
 
 # What is an Object?
 
@@ -67,7 +69,9 @@ For example, if we were making a hi-tech coffee mug that knew how to brew its ow
 
 We can now call `coffeeMug.brewCoffee()` to execute the method from our `coffeeMug` object.
 
-<img align="center" src="https://media.giphy.com/media/3oEjI1JmchoJMbIJYQ/giphy.gif" alt="coffee">
+<p align="center">
+  <img height="300" src="https://media.giphy.com/media/3oEjI1JmchoJMbIJYQ/giphy.gif" alt="coffee">
+</p>
 
 # Creating Objects
 
@@ -95,7 +99,9 @@ The easiest way to create an object is by using literal brackets when defining y
 
 As you can see, the `books` variable refers to an empty object, while the `banana` variable refers to an object complete with properties and methods already defined inside. That banana has some personality!
 
-<img align="center" src="https://media.giphy.com/media/yAqdjThdDEMF2/giphy.gif" alt="banana">
+<p align="center">
+  <img height="300" src="https://media.giphy.com/media/yAqdjThdDEMF2/giphy.gif" alt="banana">
+</p>
 
 ## Object Constructors
 
@@ -116,7 +122,9 @@ Even with object literals, we would have to define each new fruit object with it
 
 Some very smart people have worked on solutions for dealing with repetitive tasks involving objects, so they devised a set of _patterns_ for dealing with the creation of multiple objects.
 
-<img align="center" src="https://media.giphy.com/media/3o85gd3noLuSkE4Lkc/giphy.gif" alt="pattern">
+<p align="center">
+  <img height="300" src="https://media.giphy.com/media/3o85gd3noLuSkE4Lkc/giphy.gif" alt="pattern">
+</p>
 
 ## Constructor Pattern
 
@@ -211,4 +219,6 @@ In this kiwi's case, `howManySeeds` would be the `kiwi`'s **own property** as op
 
 This was a brief overview of the key parts of working with objects in JavaScript. Hopefully this provided a decent explanation of what an object is, and how you can start working with them and harnessing their powerful features.
 
-<img align="center" src="https://media.giphy.com/media/13ExF2qUe1ZUbe/giphy.gif" alt="powerful">
+<p align="center">
+  <img height="300" src="https://media.giphy.com/media/13ExF2qUe1ZUbe/giphy.gif" alt="powerful">
+</p>
