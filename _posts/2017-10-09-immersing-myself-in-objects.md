@@ -22,7 +22,7 @@ All data types besides Objects are considered primitive data types. Today I want
 
 ![blocks](https://media.giphy.com/media/MvovQGsMBY9H2/giphy.gif)
 
-## What is an Object?
+# What is an Object?
 
 At a fundamental level, you can think of an object in JavaScript much like an object in real life.
 
@@ -69,14 +69,14 @@ We can now call `coffeeMug.brewCoffee()` to execute the method from our `coffeeM
 
 ![coffee](https://media.giphy.com/media/3oEjI1JmchoJMbIJYQ/giphy.gif)
 
-## Creating Objects
+# Creating Objects
 
 There are 2 common ways to create an object:
 
   1. Object Literals
   2. Object Constructors
 
-### Object Literals
+## Object Literals
 
 The easiest way to create an object is by using literal brackets when defining your object:
 
@@ -97,7 +97,7 @@ As you can see, the `books` variable refers to an empty object, while the `banan
 
 ![banana](https://media.giphy.com/media/yAqdjThdDEMF2/giphy.gif)
 
-### Object Constructors
+## Object Constructors
 
 Another way to create objects is by using the **Object Constructor** function. It's a function that is used for initializing new objects, and is generally used with the `new` keyword.
 
@@ -112,13 +112,13 @@ These are all effective ways of creating objects for small programs, but what ha
 
 Even with object literals, we would have to define each new fruit object with its different properties every time we discovered a new type of fruit. Depending on how massive our program ends up being, this would be a huge hassle.
 
-## Patterns
+# Patterns
 
 Some very smart people have worked on solutions for dealing with repetitive tasks involving objects, so they devised a set of _patterns_ for dealing with the creation of multiple objects.
 
 ![pattern](https://media.giphy.com/media/3o85gd3noLuSkE4Lkc/giphy.gif)
 
-### Constructor Pattern
+## Constructor Pattern
 
 The constructor pattern requires you make your own constructor function for the Object that you want to create. This constructor function will serve as a 'blueprint' for all future objects instantiated with the `new` keyword, while passing in the appropriate values for the objects properties.
 
@@ -144,7 +144,7 @@ Notice how we use the `this` keyword to refer to the calling object, `mango`. `t
 
 Now whenever a new fruit is made with the `Fruit()` constructor function and the right arguments, it will now have the same blueprint as every other `Fruit` created with that function.
 
-### Prototype Pattern
+## Prototype Pattern
 
 There is no Class hierarchy in JavaScript like there is in Java or C++, there are only objects. In a class-based language, you have the luxury of creating **Classes**, that will instantiate **Objects** while having those Objects inherit all of the methods and variables from its parent Class.
 
@@ -164,14 +164,14 @@ This prototype object serves as a blueprint for all other objects that inherit f
   }
 ```
 
-## Accessing Properties on an Object
+# Accessing Properties on an Object
 
 There are 2 ways of accessing a property from an object:
 
   1. Dot Notation
   2. Bracket Notation
 
-### Dot Notation
+## Dot Notation
 
 You will probably use dot notation to access most properties on objects. It follows the simple pattern of `object.propertyName`:
 
@@ -181,7 +181,7 @@ You will probably use dot notation to access most properties on objects. It foll
   console.log(book.genre); // "suspense"
 ```
 
-### Bracket Notation
+## Bracket Notation
 
 Bracket notation can be a useful way of accessing a property name. When accesssing a property, the `key` of every property ultimately converts to a `String` data type. With bracket notation, you can pass in any _expression_ that returns a string.
 
@@ -193,7 +193,7 @@ Bracket notation can be a useful way of accessing a property name. When accesssi
   console.log(banana["col" + "or"]); // "Yellow"
 ```
 
-## Own vs Inherited Properties
+# Own vs Inherited Properties
 
 Let's say you have an object `kiwi` that was created from a `Fruit()` constructor function. That `kiwi` object has already inherited properties and methods from the `Fruit` prototype that were already defined. But you can also define methods on the specific object of `kiwi` that would not be available on the `Fruit` prototype.
 
