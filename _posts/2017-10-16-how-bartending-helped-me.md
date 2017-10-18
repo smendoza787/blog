@@ -1,0 +1,60 @@
+---
+published: true
+layout: post
+title: "How Working in the Service Industry Helped Me Become a Better Developer"
+author: "Sergio"
+permalink: /2017/10/16/how-bartending-helped-me
+date: '2017-10-16 16:16:01 -0600'
+---
+
+This week I've decided to veer from my technical blog posts and turn the magnifying glass on myself for some good old-fashioned introspection.
+
+I come from a completely non-technical background, and I'm currently looking for my first job as a developer. Hopefully, this will help others who are in the same position as I am, and will help them realize that some of their non-technical skills that they have acquired over the years from previous unrelated jobs will actually benefit them a lot more than they think!
+
+The problem is (or so I thought) that having a non-technical work history was going to work against my favor in terms of looking for a gig as a developer. But after having a few conversations with working developers in the field, that might be farther from the truth than I had initially thought.
+
+For anyone wondering, I currently work as a bartender on the Vegas strip. I make delicious (99% of the time) alcoholic beverages for tourists from all over the world to enjoy while they're on vacation at one of the top tourist destinations on the planet. I get to talk to people from all over the world, and I help create memorable experiences for guests that come out to have a great time.
+
+But Sergio, that wonderful description of your life's work has almost nothing to do with programming. Where is the syntax? Where can I put my `package.json`? Where are the task runners in charge of minifying my code for production performance?
+
+Well, you might be right. Bartending and hospitality might have little-to-nothing to do with tech. However, with this in mind, I decided to consciously look for similarities between my current role and the future role-of-my-dreams. I was excited to learn that some of the things I do in my profession can transfer over perfectly into a role as a developer.
+
+# Communication
+
+This is the one skill I've been able to constantly hone throughout my career. When I was younger I was a pretty timid kid. I always kept to myself, my friends or my computer. Of course, I was always nice to people, but I would never go out of my way to talk to many strangers. Once I got my first job as a cashier at the Long Beach aquarium, that all started to change. All of a sudden I had to talk to everyone that came up to my ice cream cart looking for delicious treats. Suggesting flavors based on their preferences, and heaven-forbid we didn't have a certain flavor, now I had to start thinking of solutions to these micro-problems.
+
+Fast-forward to now, and I've come to love communicating with all kinds of people. Behind every face is a different story, a different upbringing, and different favorite cocktail. I believe conversations are the stitches of the fabric of this colossal quilt we call life. As a bartender, if I ever have a conversation that went awry, I can jump in a new conversation immediately and try a different approach.
+
+Circling back to tech, I think being able to communicate effectively and constantly improve my vernacular has proved to be a massive advantage when it comes to looking for a tech job. I can approach a developer/CTO/project manager just like if they were a guest at my bar, and strike up a conversation about anything. Do I not understand a bug? Am I working too tightly against a deadline? These are all problems that communicating effectively would solve easily, and I'm glad I've been able to constantly work at it throughout my career.
+
+# Urgency
+
+In regards to the service industry, providing urgent service is a must. When a wedding group of 10+ people comes up to the bar, your number one priority is to figure out a way to deliver the best, quickest, error-free service that you possibly can at that moment. Sometimes you'll have a team of people to delegate responsibilities to, and sometimes you'll be all by yourself with multiple groups of guests waiting to be served.
+
+In any case, it's up to you to be able to come up with a solution to the situation. I find the best way is to break everything down into smaller, manageable steps. Hopefully, everyone wants a similar drink where you can just batch up the ingredients and send everyone on their way. Sometimes you get edge cases where everyone wants a completely different drink, and EVERYONE wants to pay on a separate credit card.
+
+In regards to tech, this can translate over to any problem you might have while working on a project. Sometimes you can write a simple function that will take in similar data and return the expected output, or sometimes that data may be so diverse that you'll either have to write out separate functions to handle each edge case or come up with a concise solution that will handle each case correctly. On top of that, all of this must be handled while keeping the quality of your execution very high.
+
+# Customer Service
+
+As a bartender, customer service is always your top priority. Amidst all of the other "jobs" you need to do (server/bouncer/manager/cashier), providing the best customer service should always be at the top of your list.
+
+This has helped me realize that when I'm developing an application, there are real people at the other end using your application to solve their own problems. Sure, that div you rotated and made look like a star looks really cool in the middle of the page like that, but this is a real estate application and I think customers would appreciate the more practical information being shown to them rather than your cool new design skills.
+
+Anticipating what the end-user would want ahead of time helps eliminate a lot of wasted time in development. After all, you are developing a product for other people to use, not just yourself.
+
+# Team-Playing
+
+Team-work makes the dream work, or so they say. In hospitality, you should be able to rely on your teammates to execute their responsibilities. As long as everyone plays their role, things go smoothly and everyone is happy.
+
+Being able to initiate, execute, and ship quality code on your own is a great skill to have. However, if you're working on a team and have an arsenal of really smart people at your disposal working on the same product, it would be in your best interest to learn how everyone works and find a way to merge all of your working styles to collaborate on the same end-goal.
+
+Would you be able to win a best-of-seven series against the Golden State Warriors all by yourself? Why would you even bother when you have a ridiculous long-range shooter like Steph Curry or a modern-day workhorse like Draymond Green? The point is when you have a group of people with a plethora of skills, it allows you to focus on the stuff YOU are really good at and are passionate about working with.
+
+# Conclusion
+
+These are just a few of the transferable skills that I was able to find in my career, and these are skills that are omnipresent in all kinds of career paths.
+
+If you are looking to make your way into tech, and have an unrelated history of work, I would challenge you to take a second look at your career path and try to derive more than just the technical skills you came away with.
+
+I strongly believe that if you know in your heart that software development is where you belong, the technical skills will come with hard work, determination, and persistence. But in the meantime, don't sell yourself short, and start exploiting the other skills you've acquired throughout your life. You might be pleasantly surprised!
