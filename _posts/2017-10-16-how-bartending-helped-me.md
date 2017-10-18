@@ -1,7 +1,7 @@
 ---
 published: true
 layout: post
-title: "How Working in the Service Industry Helped Me Become a Better Developer"
+title: "How Bartending Helped Me Become a Better Developer"
 author: "Sergio"
 permalink: /2017/10/16/how-bartending-helped-me
 date: '2017-10-16 16:16:01 -0600'
