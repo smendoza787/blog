@@ -22,7 +22,7 @@ If you assign a color to a few elements, say a navigation and a footer, every ti
 
 .some-div {
 	background-color: #ff0000;
-	font-size 2.2em;
+	font-size: 2.2em;
 	color: #cccccc;
 }
 
@@ -38,7 +38,7 @@ If these 3 divs were on completely different stylesheets, it would be tiring to 
 
 Another tedious task in CSS involves working with specificity. Given the HTML:
 
-```h
+```
 <div class="contact-info">
 	<h2>Mo Schmo</h2>
 	<p>This is a contact card for Mo Schmo</p>
@@ -157,6 +157,9 @@ ol {
   margin:  0;
   padding: 0;
 }
+
+----------------------------------------
+
 // base.scss
 
 @import 'reset';
