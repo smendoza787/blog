@@ -169,4 +169,4 @@ body {
 
 This is just the tip of the iceberg when talking about the abundance of CSS preprocessors out there ( [less](http://lesscss.org/), [stylus](http://stylus-lang.com/), [postcss](http://postcss.org/) ).
 
-I highly recommend taking a look at all of them and finding one that resonates with you. Most of them should have an area for you to try out the language.
+I highly recommend taking a look at all of them and finding one that resonates with you. Most of them should have an area for you to try out the language to see if its something you enjoy working with.
