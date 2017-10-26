@@ -47,7 +47,7 @@
 
   <p>After getting more comfortable with moving around in a codebase, I started noticing a lot of little annoyances that slowed me down when I was getting into a really good flow. Things like having to change multiple values, not being able to find certain CSS selectors, or not being able to select certain elements so easily. These are some of the problems I have with CSS:</p>
 
-<h2 id="changing-similar-values-multiple-times">Changing Similar Values, Multiple Times</h2>
+<h1 id="css-doesnt-use-variables">CSS Doesn’t Use Variables</h1>
 
 <p>If you assign a color to a few elements, say a navigation and a footer, every time you change that color in one place you now need to change that color in every other element to keep things consistent.</p>
 
@@ -59,7 +59,7 @@
 
 <span class="nc">.some-div</span> <span class="p">{</span>
 	<span class="nl">background-color</span><span class="p">:</span> <span class="m">#ff0000</span><span class="p">;</span>
-	<span class="err">font-size</span> <span class="err">2.2em;</span>
+	<span class="nl">font-size</span><span class="p">:</span> <span class="m">2.2em</span><span class="p">;</span>
 	<span class="nl">color</span><span class="p">:</span> <span class="m">#cccccc</span><span class="p">;</span>
 <span class="p">}</span>
 
@@ -72,15 +72,16 @@
 
 <p>If these 3 divs were on completely different stylesheets, it would be tiring to change each value everytime you wanted to change that color.</p>
 
-<h2 id="can-you-be-more-specific">Can You Be More Specific?</h2>
+<h1 id="css-doesnt-let-you-nest-selectors">CSS Doesn’t Let You Nest Selectors</h1>
 
 <p>Another tedious task in CSS involves working with specificity. Given the HTML:</p>
 
-<pre><code class="language-h">&lt;div class="contact-info"&gt;
+<div class="highlighter-rouge"><pre class="highlight"><code>&lt;div class="contact-info"&gt;
 	&lt;h2&gt;Mo Schmo&lt;/h2&gt;
 	&lt;p&gt;This is a contact card for Mo Schmo&lt;/p&gt;
 &lt;/div&gt;
 </code></pre>
+</div>
 
 <p>If you wanted to style the <code class="highlighter-rouge">h2</code> and <code class="highlighter-rouge">p</code> tags differently, the styling for the <code class="highlighter-rouge">.contact-info</code> might look like this:</p>
 
@@ -102,13 +103,13 @@
 
 <p>We just had to write out 3 separate selectors for content contained in a single <code class="highlighter-rouge">div</code>. It would be alot easier to select the contact-info and all the elements inside of it by using some sort of nesting technique.</p>
 
-<h1 id="organizing-your-stylesheets">Organizing Your Stylesheets</h1>
+<h1 id="css-can-get-messy">CSS Can Get Messy</h1>
 
 <p>The bigger your codebase, the more you need to keep it organized. Up until recently my stylesheets were pretty small, never surpassing more than 30 or 40 selectors. Once I started working on projects that had a lot more components involved, I found myself scrolling up and down my single stylesheet looking for the right selector. This made me wish I had a better system of organization.</p>
 
 <p>It would be neat if CSS had a way to organize your stylesheets in a tidy file structure.</p>
 
-<h1 id="lets-get-sassy">Let’s Get SASSY</h1>
+<h1 id="lets-get-sassy">Let’s Get SASSy</h1>
 
 <p>For this post we’ll be addressing SCSS (Sassy CSS) which is the newer version of SASS, the main difference being SASS uses indentation for a clean look, and SCSS uses semi-colons and curly brackets for a more traditional feel.</p>
 
@@ -120,7 +121,7 @@
 
 <p>Lets go over their solutions for the problems we described earlier:</p>
 
-<h1 id="scss-variables">SCSS Variables</h1>
+<h1 id="scss-uses-variables">SCSS Uses Variables</h1>
 
 <p>Sass uses the concept of variables. For any value that we plan on using a lot throughout our code (fonts, colors, whatever), we can simply store them in a variable for later use:</p>
 
@@ -140,7 +141,7 @@
 
 <p>Now if we need to change our favorite color, we can change the value in one place, super neat!</p>
 
-<h1 id="nesting">Nesting</h1>
+<h1 id="scss-also-uses-nesting">SCSS Also Uses Nesting</h1>
 
 <p>Nesting is a concept that we should already be used to seeing in HTML. Seeing elements nested inside of each other is a great way to visualize your elements.</p>
 
@@ -178,7 +179,7 @@
 
 <p>This is a mundane example, but using nested selectors has definitely increased my productivity.</p>
 
-<h1 id="importing-styleheets">Importing Styleheets</h1>
+<h1 id="scss-imports-stuff-for-you">SCSS <code class="highlighter-rouge">@import</code>s Stuff For You</h1>
 
 <p>CSS currently has an <code class="highlighter-rouge">@import</code> option that allows you to separate your files into manageable chunks, but the only drawback is that it creates an HTTP request every time it is called. Sass builds on top of CSS <code class="highlighter-rouge">@import</code> but instead of requiring an HTTP request, Sass will take the file you want to import and combine it with the file you’re importing into so you can serve a single CSS file to the web browser.</p>
 
@@ -193,9 +194,12 @@
   <span class="nl">margin</span><span class="p">:</span>  <span class="m">0</span><span class="p">;</span>
   <span class="nl">padding</span><span class="p">:</span> <span class="m">0</span><span class="p">;</span>
 <span class="p">}</span>
-<span class="c1">// base.scss
-</span>
-<span class="k">@import</span> <span class="s1">'reset'</span><span class="p">;</span>
+
+<span class="nt">----------------------------------------</span>
+
+<span class="o">//</span> <span class="nt">base</span><span class="nc">.scss</span>
+
+<span class="o">@</span><span class="nt">import</span> <span class="s1">'reset'</span><span class="p">;</span>
 
 <span class="nt">body</span> <span class="p">{</span>
   <span class="nl">font</span><span class="p">:</span> <span class="m">100%</span> <span class="n">Helvetica</span><span class="o">,</span> <span class="nb">sans-serif</span><span class="p">;</span>

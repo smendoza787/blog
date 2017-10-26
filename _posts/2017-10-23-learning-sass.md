@@ -9,7 +9,7 @@ date: '2017-10-23 16:16:01 -0600'
 
 After getting more comfortable with moving around in a codebase, I started noticing a lot of little annoyances that slowed me down when I was getting into a really good flow. Things like having to change multiple values, not being able to find certain CSS selectors, or not being able to select certain elements so easily. These are some of the problems I have with CSS:
 
-## Changing Similar Values, Multiple Times
+# CSS Doesn't Use Variables
 
 If you assign a color to a few elements, say a navigation and a footer, every time you change that color in one place you now need to change that color in every other element to keep things consistent.
 
@@ -34,7 +34,7 @@ If you assign a color to a few elements, say a navigation and a footer, every ti
 
 If these 3 divs were on completely different stylesheets, it would be tiring to change each value everytime you wanted to change that color.
 
-## Can You Be More Specific?
+# CSS Doesn't Let You Nest Selectors
 
 Another tedious task in CSS involves working with specificity. Given the HTML:
 
@@ -65,13 +65,13 @@ If you wanted to style the `h2` and `p` tags differently, the styling for the `.
 
 We just had to write out 3 separate selectors for content contained in a single `div`. It would be alot easier to select the contact-info and all the elements inside of it by using some sort of nesting technique.
 
-# Organizing Your Stylesheets
+# CSS Can Get Messy
 
 The bigger your codebase, the more you need to keep it organized. Up until recently my stylesheets were pretty small, never surpassing more than 30 or 40 selectors. Once I started working on projects that had a lot more components involved, I found myself scrolling up and down my single stylesheet looking for the right selector. This made me wish I had a better system of organization.
 
 It would be neat if CSS had a way to organize your stylesheets in a tidy file structure.
 
-# Let's Get SASSY
+# Let's Get SASSy
 
 For this post we'll be addressing SCSS (Sassy CSS) which is the newer version of SASS, the main difference being SASS uses indentation for a clean look, and SCSS uses semi-colons and curly brackets for a more traditional feel.
 
@@ -83,7 +83,7 @@ Sass addresses the common pitfalls of writing regular CSS, and lets you write co
 
 Lets go over their solutions for the problems we described earlier:
 
-# SCSS Variables
+# SCSS Uses Variables
 
 Sass uses the concept of variables. For any value that we plan on using a lot throughout our code (fonts, colors, whatever), we can simply store them in a variable for later use:
 
@@ -103,7 +103,7 @@ h4 {
 
 Now if we need to change our favorite color, we can change the value in one place, super neat!
 
-# Nesting
+# SCSS Also Uses Nesting
 
 Nesting is a concept that we should already be used to seeing in HTML. Seeing elements nested inside of each other is a great way to visualize your elements.
 
@@ -141,7 +141,7 @@ The above gets processed into:
 
 This is a mundane example, but using nested selectors has definitely increased my productivity.
 
-# Importing Styleheets
+# SCSS `@import`s Stuff For You
 
 CSS currently has an `@import` option that allows you to separate your files into manageable chunks, but the only drawback is that it creates an HTTP request every time it is called. Sass builds on top of CSS `@import` but instead of requiring an HTTP request, Sass will take the file you want to import and combine it with the file you're importing into so you can serve a single CSS file to the web browser.
 
