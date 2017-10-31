@@ -223,7 +223,7 @@ I don't want to get into too much detail about the views and templates. Aside fr
 
 ![Imgur](https://i.imgur.com/JUkukJv.png)
 
-That, and a whole lot of SCSS which was my first real go at using it in a Rails environment:
+That, and a whole lot of SCSS which was my first real go at using it in a Rails environment (_side-note: SO CONVENIENT_):
 
 ![Imgur](https://i.imgur.com/U5mhdNv.png)
 
