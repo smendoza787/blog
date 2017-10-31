@@ -7,21 +7,31 @@ permalink: /2017/10/28/chat-app-actioncable
 date: '2017-10-28 16:16:01 -0600'
 ---
 
-A few months ago Reddit released a short-lived experiment of sorts called r/place. The idea of the project involved 72 hours where people would be able to place a single pixel on this giant 10000px x 10000px blank canvas once every 10 minutes. This ended up being a really interesting experience to live through and be apart of. People had to come together in creative ways in order to achieve an awesome drawing, and there were tons! You can check out the [time lapse of the project here](https://www.youtube.com/watch?v=XnRCZK3KjUY).
+A few months ago Reddit released a short-lived experiment of sorts called r/place. The idea of the project involved 72 hours where people would be able to place a single pixel on this giant 10000px x 10000px blank canvas once every 10 minutes. 
 
-As cool and insightful as that project was, I think the underlying technology behind is even cooler.
+This was a really interesting experience to live through and be apart of. People had to come together in creative ways in order to achieve an awesome drawing. Some groups teamed up to draw murals of their cities, sports teams, and subreddits while others teamed up to 'destroy' or draw over the beautiful work of others.
+
+You can check out the [time lapse of the project here](https://www.youtube.com/watch?v=XnRCZK3KjUY).
+
+As cool and insightful as that project was, I think the underlying technology behind it is even cooler.
 
 # WebSockets
 
 r/place used a technology called WebSockets, which is defined from Wikipedia as follows:
 
-     The WebSocket protocol enables interaction between a browser and a web server with lower overheads, facilitating real-time      data transfer from and to the server. This is made possible by providing a standardized way for the server to send content to      the browser without being solicited by the client, and allowing for messages to be passed back and forth while keeping the      connection open. In this way, a two-way (bi-directional) ongoing conversation can take place between a browser and the server.
+> The WebSocket protocol enables interaction between a browser and a web
+> server with lower overheads, facilitating real-time data transfer from
+> and to the server. This is made possible by providing a standardized way
+> for the server to send content to the browser without being solicited by
+> the client, and allowing for messages to be passed back and forth while
+> keeping the connection open. In this way, a two-way (bi-directional)
+> ongoing conversation can take place between a browser and the server.
 
 As a result of WebSockets, gone are the days of waiting for a request from the client to send a response to the server. As soon as your browser 'upgrades' to the websocket connection, you are in a constant "handshake" with that server, and will receive unsolicited responses pushed to your browser in real-time.
 
 In practice, Reddit was able to develop a web application that established websocket connections with hundreds of thousands of people across the globe. Whenever someone sent a POST request with their color and coordinates, the server sent out responses to browsers that updated the canvas with JavaScript.
 
-# ActionCable
+# ActionCable Intro
 
 Rails 5 introduced a new feature called ActionCable, designed to integrate WebSockets easily into any Rails application. We can now integrate real-time features and write in the same style that we write the rest of our Rails projects!
 
@@ -43,7 +53,7 @@ Connections form the foundation of the client-server relationship. Every time a 
 
 The client of a WebSocket connection is called a consumer. Anyone can create a consumer-connection pair per browser tab/window/device they have open.
 
-### Connection Setup
+## Connection Setup
 
 I originally planned on using Devise for my authentication until I ran into some issues getting the `session[:user_id]` because of the way Devise handled things, so I found the [Clearance gem](https://github.com/thoughtbot/clearance) and ended up loving how simple it was to setup and how well Thoughtbot documented it all.
 
@@ -103,6 +113,8 @@ When a consumer subscribes to a channel, they are now considered a subscriber of
 
 When a message is broadcast from the channel, it delivers that message to all subscribers of that channel based on an identifier sent by the consumer.
 
+## Code
+
 Below is the code for my `ChatChannel` involving channels, streams and subscriptions:
 
 ```ruby
@@ -160,6 +172,8 @@ A consumer becomes a subscriber by creating a subscription to a given channel.
 
 A consumer can act as a subscriber to a given channel any number of times.
 
+## Code 
+
 Below I've thrown in some of the code I used for the client side part of my application. When the page is first loaded, a subscription is made to the `ChatChannel`, and jQuery takes care of dynamically rendering the received content onto the page.
 
 ```javascript
@@ -203,7 +217,7 @@ jQuery(document).on 'turbolinks:load', ->
       e.preventDefault()
 ```
 
-# Views Templates
+# View Templates
 
 I don't want to get into too much detail about the views and templates. Aside from the WebSocket functionality, it's essentially a messaging CRUD app with an index and show page for chats, and some extra views that overwrite the default Clearance signin/signup forms:
 
