@@ -221,11 +221,11 @@ jQuery(document).on 'turbolinks:load', ->
 
 I don't want to get into too much detail about the views and templates. Aside from the WebSocket functionality, it's essentially a messaging CRUD app with an index and show page for chats, and some extra views that overwrite the default Clearance signin/signup forms:
 
-[Imgur](https://i.imgur.com/JUkukJv.png)
+![Imgur](https://i.imgur.com/JUkukJv.png)
 
 That, and a while lot of SCSS which I had a great experience with and had fun learning :) :
 
-[Imgur](https://i.imgur.com/U5mhdNv.png)
+![Imgur](https://i.imgur.com/U5mhdNv.png)
 
 ## Issues With Rendering Messages
 
