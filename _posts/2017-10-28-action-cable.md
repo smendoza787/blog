@@ -91,7 +91,19 @@ Channels behave similarly to controllers in MVC environments. They encapsulate a
 
 For example, you could have a ChatChannel for chat functionality, and an Appearance Channel for the ability to see when people log in/log out. A consumer can be subscribed to either or both of these channels at once.
 
-Below is the code for my `ChatChannel`:
+## Streams
+
+Streams provide the avenue by which channels route published content to their subscribers. All messages that are broadcast to a stream will be visible to all users subscribed to that stream. 
+
+In our case, a chat should be private to the 2 users involved in that chat. However I would like to later implement a chat room where multiple users can subscribe to a chat room stream.
+
+## Subscriptions
+
+When a consumer subscribes to a channel, they are now considered a subscriber of that channel. The connection between a channel and subscriber is known as a subscription.
+
+When a message is broadcast from the channel, it delivers that message to all subscribers of that channel based on an identifier sent by the consumer.
+
+Below is the code for my `ChatChannel` involving channels, streams and subscriptions:
 
 ```ruby
 # app/channels/chat_channel.rb
@@ -110,13 +122,9 @@ class ChatChannel < ApplicationCable::Channel
 end
 ```
 
-The `subscribe` and `unsubscribe` methods get called when a client subscribe and ubsubscribes to the chat channel respectively.
+The `subscribe` and `unsubscribe` methods get called when a client subscribe and unsubscribes to the chat channel respectively.
 
-## Subscriptions
-
-When a consumer subscribes to a channel, they are now considered a subscriber of that channel. The connection between a channel and subscriber is known as a subscription.
-
-When a message is broadcast from the channel, it delivers that message to all subscribers of that channel based on an identifier sent by the consumer.
+When a new subscription is created, the server calls ActionCable's `stream_from` method in order to stream all messages from the `"chat_#{params['chat_id']}_channel"` which means each stream is private to each user involved.
 
 # Client-Side Components
 
@@ -142,19 +150,15 @@ A Consumer requires an instance of the connection on their side, this is establi
 
 This code connects against `/cable` on your server by default. However, the connection won't be established until you specify at least one subscription you'd like to have.
 
-## Subscriber
+# Subscriber
 
 A consumer becomes a subscriber by creating a subscription to a given channel.
 
-App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" }
+```ruby
+  App.cable.subscriptions.create { channel: "ChatChannel", room: "Best Room" }
+```
 
 A consumer can act as a subscriber to a given channel any number of times.
-
-# Streams
-
-Streams provide the avenue by which channels route published content to their subscribers.
-
-# Client Side Code
 
 Below I've thrown in some of the code I used for the client side part of my application. When the page is first loaded, a subscription is made to the `ChatChannel`, and jQuery takes care of dynamically rendering the received content onto the page.
 
@@ -198,6 +202,78 @@ jQuery(document).on 'turbolinks:load', ->
       $message_body.val('')
       e.preventDefault()
 ```
+
+# Views Templates
+
+I don't want to get into too much detail about the views and templates. Aside from the WebSocket functionality, it's essentially a messaging CRUD app with an index and show page for chats, and some extra views that overwrite the default Clearance signin/signup forms:
+
+[Imgur](https://i.imgur.com/JUkukJv.png)
+
+That, and a while lot of SCSS which I had a great experience with and had fun learning :) :
+
+[Imgur](https://i.imgur.com/U5mhdNv.png)
+
+## Issues With Rendering Messages
+
+I do want to focus on a small issue I was having with the `_message` partials rendering the way I wanted them to.
+
+I wanted the current_user's messages to render with a different color in order to differentiate the message from the other user's message, kind of like a normal chat app.
+
+```ruby
+  # app/views/messages/_message.html.erb
+
+  <% if current_user.id == message.user.id %>
+    <div class="message">
+      <div class="message-user">
+        <i class="fa fa-user-circle fa-2x" aria-hidden="true"></i>
+        <p><%= message.user.name %></p>
+      </div>
+      <div class="message-content">
+        <p><%= message.body %></p>
+      </div>
+    </div>
+  <% else %>
+    <div class="message">
+      <div class="message-user other-user">
+        <i class="fa fa-user-circle fa-2x" aria-hidden="true"></i>
+        <p><%= message.user.name %></p>
+      </div>
+      <div class="message-content">
+        <p><%= message.body %></p>
+      </div>
+    </div>
+  <% end %>
+```
+
+Initially, the `chat#show` page was rendering each chat message with:
+
+```ruby
+  # app/views/chats/show.html.erb
+
+  <div id="chat-messages">
+    <div id="messages" data-chat-id="<%= @chat.id %>">
+      <%= render @chat.messages %>
+    </div>
+  </div>
+```
+
+The problem with this, is that the message partial does not have access to the `current_user`, so I kept running into errors.
+
+## Rendering Messages Solution
+
+After perusing through [RailsGuides](http://guides.rubyonrails.org/layouts_and_rendering.html#passing-local-variables) I (_cough...forgot..._) remembered that you can pass local variables into partials in order for them to have access to them.
+
+```ruby
+  <div id="chat-messages">
+    <div id="messages" data-chat-id="<%= @chat.id %>">
+      <%= render @chat.messages, locals: {current_user: current_user} %>
+    </div>
+  </div>
+```
+
+This allowed me to access the `current_user` variable, and compare `current_user.id` and `message.user.id` in order to apply different classes to the message div.
+
+# Live Demo
 
 You can see a [live demo of the app here](https://bp-messenger.herokuapp.com).
 
