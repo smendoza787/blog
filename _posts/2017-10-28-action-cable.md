@@ -150,7 +150,7 @@ A Consumer requires an instance of the connection on their side, this is establi
 
 This code connects against `/cable` on your server by default. However, the connection won't be established until you specify at least one subscription you'd like to have.
 
-# Subscriber
+## Subscriber
 
 A consumer becomes a subscriber by creating a subscription to a given channel.
 
