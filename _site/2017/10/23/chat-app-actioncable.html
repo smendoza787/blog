@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Building a Chat App With Rails 5 and ActionCable &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-10-28 15:16:01 -0700">October 28, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Building a Chat App With Rails 5 and ActionCable</h1>
+  <div class="post-line"></div>
+
+  <p>A few months ago Reddit released a short-lived experiment of sorts called r/place. The idea of the project involved 72 hours where people would be able to place a single pixel on this giant 10000px x 10000px blank canvas once every 10 minutes. This ended up being a really interesting experience to live through and be apart of. People had to come together in creative ways in order to achieve an awesome drawing, and there were tons! You can check out the <a href="https://www.youtube.com/watch?v=XnRCZK3KjUY">time lapse of the project here</a>.</p>
+
+<p>As cool and insightful as that project was, I think the underlying technology behind is even cooler.</p>
+
+<h1 id="websockets">WebSockets</h1>
+
+<p>r/place used a technology called WebSockets, which is defined from Wikipedia as follows:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code> The WebSocket protocol enables interaction between a browser and a web server with lower overheads, facilitating real-time      data transfer from and to the server. This is made possible by providing a standardized way for the server to send content to      the browser without being solicited by the client, and allowing for messages to be passed back and forth while keeping the      connection open. In this way, a two-way (bi-directional) ongoing conversation can take place between a browser and the server.
+</code></pre>
+</div>
+
+<p>As a result of WebSockets, gone are the days of waiting for a request from the client to send a response to the server. As soon as your browser ‘upgrades’ to the websocket connection, you are in a constant “handshake” with that server, and will receive unsolicited responses pushed to your browser in real-time.</p>
+
+<p>In practice, Reddit was able to develop a web application that established websocket connections with hundreds of thousands of people across the globe. Whenever someone sent a POST request with their color and coordinates, the server sent out responses to browsers that updated the canvas with JavaScript.</p>
+
+<h1 id="actioncable">ActionCable</h1>
+
+<p>Rails 5 introduced a new feature called ActionCable, designed to integrate WebSockets easily into any Rails application. We can now integrate real-time features and write in the same style that we write the rest of our Rails projects!</p>
+
+<p>ActionCable provides a client-side JavaScript framework, along with a server-side Ruby framework. This gives us access to our Ruby models and ActiveRecord or another ORM of our choice.</p>
+
+<h2 id="pubsub">Pub/Sub</h2>
+
+<p>The first concept to understand is the <a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern">Publish/Subscribe</a> pattern.</p>
+
+<p>The Pub/Sub system involves the sender of data, aka the Publisher, categorizing published messages into classes without knowing which Subscribers are subscribed to it.</p>
+
+<p>Similarly, subscribers can subscribe to as many classes as they wish and only receive messages that they choose to receive messages from.</p>
+
+<h1 id="server-side-components">Server-Side Components</h1>
+
+<h2 id="connections">Connections</h2>
+
+<p>Connections form the foundation of the client-server relationship. Every time a Websocket is accepted by the server, a connection object is instantiated.</p>
+
+<p>The client of a WebSocket connection is called a consumer. Anyone can create a consumer-connection pair per browser tab/window/device they have open.</p>
+
+<h3 id="connection-setup">Connection Setup</h3>
+
+<p>I originally planned on using Devise for my authentication until I ran into some issues getting the <code class="highlighter-rouge">session[:user_id]</code> because of the way Devise handled things, so I found the <a href="https://github.com/thoughtbot/clearance">Clearance gem</a> and ended up loving how simple it was to setup and how well Thoughtbot documented it all.</p>
+
+<p>The code in my <code class="highlighter-rouge">connection.rb</code> is in charge of finding the right room to connect in my <code class="highlighter-rouge">ChatChannel</code>, along with some other code that involved using Clearance models to find the <code class="highlighter-rouge">current_user</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/channels/application_cable/connection.rb</span>
+
+<span class="k">module</span> <span class="nn">ApplicationCable</span>
+  <span class="k">class</span> <span class="nc">Connection</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Connection</span><span class="o">::</span><span class="no">Base</span>
+    <span class="n">identified_by</span> <span class="ss">:current_user</span>
+
+    <span class="k">def</span> <span class="nf">connect</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">current_user</span> <span class="o">=</span> <span class="n">find_current_user</span>
+      <span class="n">reject_unauthorized_connection</span> <span class="k">unless</span> <span class="nb">self</span><span class="p">.</span><span class="nf">current_user</span>
+    <span class="k">end</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">find_current_user</span>
+        <span class="k">if</span> <span class="n">remember_token</span><span class="p">.</span><span class="nf">present?</span>
+          <span class="vi">@current_user</span> <span class="o">||=</span> <span class="n">user_from_remember_token</span><span class="p">(</span><span class="n">remember_token</span><span class="p">)</span>
+        <span class="k">end</span>
+
+        <span class="vi">@current_user</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">cookies</span>
+        <span class="vi">@cookies</span> <span class="o">||=</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Request</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="vi">@env</span><span class="p">).</span><span class="nf">cookie_jar</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">remember_token</span>
+        <span class="n">cookies</span><span class="p">[</span><span class="no">Clearance</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">cookie_name</span><span class="p">]</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">user_from_remember_token</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+        <span class="no">Clearance</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">user_model</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">remember_token: </span><span class="n">token</span><span class="p">)</span>
+      <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<h2 id="channels">Channels</h2>
+
+<p>Channels behave similarly to controllers in MVC environments. They encapsulate a logical unit of work, and contain shared logic between your channels.</p>
+
+<p>For example, you could have a ChatChannel for chat functionality, and an Appearance Channel for the ability to see when people log in/log out. A consumer can be subscribed to either or both of these channels at once.</p>
+
+<p>Below is the code for my <code class="highlighter-rouge">ChatChannel</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/channels/chat_channel.rb</span>
+
+<span class="k">class</span> <span class="nc">ChatChannel</span> <span class="o">&lt;</span> <span class="no">ApplicationCable</span><span class="o">::</span><span class="no">Channel</span>
+  <span class="k">def</span> <span class="nf">subscribed</span>
+    <span class="n">stream_from</span> <span class="s2">"chat_</span><span class="si">#{</span><span class="n">params</span><span class="p">[</span><span class="s1">'chat_id'</span><span class="p">]</span><span class="si">}</span><span class="s2">_channel"</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">unsubscribed</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">current_user</span><span class="p">.</span><span class="nf">messages</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="ss">body: </span><span class="n">data</span><span class="p">[</span><span class="s1">'message'</span><span class="p">],</span> <span class="ss">chat_id: </span><span class="n">data</span><span class="p">[</span><span class="s1">'chat_id'</span><span class="p">])</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">subscribe</code> and <code class="highlighter-rouge">unsubscribe</code> methods get called when a client subscribe and ubsubscribes to the chat channel respectively.</p>
+
+<h2 id="subscriptions">Subscriptions</h2>
+
+<p>When a consumer subscribes to a channel, they are now considered a subscriber of that channel. The connection between a channel and subscriber is known as a subscription.</p>
+
+<p>When a message is broadcast from the channel, it delivers that message to all subscribers of that channel based on an identifier sent by the consumer.</p>
+
+<h1 id="client-side-components">Client-Side Components</h1>
+
+<h2 id="connections-1">Connections</h2>
+
+<p>A Consumer requires an instance of the connection on their side, this is established using some client-side code that Rails already generates for you for every new project:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="c1"># app/assets/javascripts/cable.js</span>
+
+<span class="sr">//</span><span class="o">=</span> <span class="nb">require</span> <span class="n">action_cable</span>
+<span class="sr">//</span><span class="o">=</span> <span class="n">require_self</span>
+<span class="sr">//</span><span class="o">=</span> <span class="n">require_tree</span> <span class="p">.</span><span class="nf">/</span><span class="n">channels</span>
+
+
+<span class="p">(</span><span class="n">function</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">this</span><span class="o">.</span><span class="no">App</span> <span class="o">||</span> <span class="p">(</span><span class="n">this</span><span class="o">.</span><span class="no">App</span> <span class="o">=</span> <span class="p">{});</span>
+
+
+  <span class="no">App</span><span class="p">.</span><span class="nf">cable</span> <span class="o">=</span> <span class="no">ActionCable</span><span class="p">.</span><span class="nf">createConsumer</span><span class="p">();</span>
+<span class="p">}).</span><span class="nf">call</span><span class="p">(</span><span class="n">this</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<p>This code connects against <code class="highlighter-rouge">/cable</code> on your server by default. However, the connection won’t be established until you specify at least one subscription you’d like to have.</p>
+
+<h2 id="subscriber">Subscriber</h2>
+
+<p>A consumer becomes a subscriber by creating a subscription to a given channel.</p>
+
+<p>App.cable.subscriptions.create { channel: “ChatChannel”, room: “Best Room” }</p>
+
+<p>A consumer can act as a subscriber to a given channel any number of times.</p>
+
+<h1 id="streams">Streams</h1>
+
+<p>Streams provide the avenue by which channels route published content to their subscribers.</p>
+
+<h1 id="client-side-code">Client Side Code</h1>
+
+<p>Below I’ve thrown in some of the code I used for the client side part of my application. When the page is first loaded, a subscription is made to the <code class="highlighter-rouge">ChatChannel</code>, and jQuery takes care of dynamically rendering the received content onto the page.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code><span class="c1">// app/assets/javascripts/channels/chat.coffee</span>
+
+<span class="nx">jQuery</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">on</span> <span class="s1">'turbolinks:load'</span><span class="p">,</span> <span class="o">-&gt;</span>
+  <span class="nx">$messages</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#messages'</span><span class="p">)</span>
+  <span class="nx">$message_body</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#message_body'</span><span class="p">)</span>
+  <span class="nx">$message_submit</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">'#message_submit'</span><span class="p">)</span>
+  <span class="k">if</span> <span class="nx">$messages</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="nx">messages_to_bottom</span> <span class="o">=</span> <span class="o">-&gt;</span>
+      <span class="nx">$</span><span class="p">(</span><span class="s1">'#chat-messages'</span><span class="p">).</span><span class="nx">scrollTop</span><span class="p">(</span><span class="nx">$</span><span class="p">(</span><span class="s1">'#chat-messages'</span><span class="p">).</span><span class="nx">prop</span><span class="p">(</span><span class="s2">"scrollHeight"</span><span class="p">))</span>
+    <span class="nx">messages_to_bottom</span><span class="p">()</span>
+    <span class="nx">App</span><span class="p">.</span><span class="nx">chat</span> <span class="o">=</span> <span class="nx">App</span><span class="p">.</span><span class="nx">cable</span><span class="p">.</span><span class="nx">subscriptions</span><span class="p">.</span><span class="nx">create</span> <span class="p">{</span>
+      <span class="nl">channel</span><span class="p">:</span> <span class="s2">"ChatChannel"</span>
+      <span class="nl">chat_id</span><span class="p">:</span> <span class="nx">$messages</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">'chat-id'</span><span class="p">)</span>
+    <span class="p">},</span>
+    <span class="nx">connected</span><span class="err">:</span> <span class="o">-&gt;</span>
+      <span class="err">#</span> <span class="nx">Called</span> <span class="nx">when</span> <span class="nx">the</span> <span class="nx">subscription</span> <span class="nx">is</span> <span class="nx">ready</span> <span class="k">for</span> <span class="nx">use</span> <span class="nx">on</span> <span class="nx">the</span> <span class="nx">server</span>
+
+    <span class="nl">disconnected</span><span class="p">:</span> <span class="o">-&gt;</span>
+      <span class="err">#</span> <span class="nx">Called</span> <span class="nx">when</span> <span class="nx">the</span> <span class="nx">subscription</span> <span class="nx">has</span> <span class="nx">been</span> <span class="nx">terminated</span> <span class="nx">by</span> <span class="nx">the</span> <span class="nx">server</span>
+
+    <span class="nl">received</span><span class="p">:</span> <span class="p">(</span><span class="nx">data</span><span class="p">)</span> <span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">data</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
+        <span class="nx">$messages</span><span class="p">.</span><span class="nx">append</span> <span class="nx">data</span><span class="p">[</span><span class="s1">'message'</span><span class="p">]</span>
+        <span class="nx">messages_to_bottom</span><span class="p">()</span>
+
+    <span class="nl">send_message</span><span class="p">:</span> <span class="p">(</span><span class="nx">message</span><span class="p">,</span> <span class="nx">chat_id</span><span class="p">)</span> <span class="o">-&gt;</span>
+      <span class="err">@</span><span class="nx">perform</span> <span class="s1">'send_message'</span><span class="p">,</span> <span class="nx">message</span><span class="err">:</span> <span class="nx">message</span><span class="p">,</span> <span class="nx">chat_id</span><span class="err">:</span> <span class="nx">chat_id</span>
+
+    <span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">keypress</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">e</span><span class="p">.</span><span class="nx">keyCode</span> <span class="nx">is</span> <span class="mi">13</span> <span class="o">&amp;&amp;</span> <span class="nx">$message_body</span><span class="p">.</span><span class="nx">is</span><span class="p">(</span><span class="s2">":focus"</span><span class="p">)</span>
+        <span class="nx">App</span><span class="p">.</span><span class="nx">chat</span><span class="p">.</span><span class="nx">send_message</span> <span class="nx">$message_body</span><span class="p">.</span><span class="nx">val</span><span class="p">(),</span> <span class="nx">$messages</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">'chat-id'</span><span class="p">)</span>
+        <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">()</span>
+        <span class="nx">$message_body</span><span class="p">.</span><span class="nx">val</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+
+    <span class="nx">$message_submit</span><span class="p">.</span><span class="nx">click</span> <span class="o">-&gt;</span>
+      <span class="nx">App</span><span class="p">.</span><span class="nx">chat</span><span class="p">.</span><span class="nx">send_message</span> <span class="nx">$message_body</span><span class="p">.</span><span class="nx">val</span><span class="p">(),</span> <span class="nx">$messages</span><span class="p">.</span><span class="nx">data</span><span class="p">(</span><span class="s1">'chat-id'</span><span class="p">)</span>
+      <span class="nx">$message_body</span><span class="p">.</span><span class="nx">val</span><span class="p">(</span><span class="s1">''</span><span class="p">)</span>
+      <span class="nx">e</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">()</span>
+</code></pre>
+</div>
+
+<p>You can see a <a href="https://bp-messenger.herokuapp.com">live demo of the app here</a>.</p>
+
+<p>I hope this intrigued you enough to take a look at ActionCable and try to figure out how to create your own real time apps. A chat feature is one of a ton of possibilities. Next, I hope to learn enough Docker to be able to deploy my own container environents and write up a post on why the container movement is changing the way we develop applications.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/10/23/learning-sass" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
