@@ -3,7 +3,7 @@ published: true
 layout: post
 title: "Building a Chat App With Rails 5 and ActionCable"
 author: "Sergio"
-permalink: /2017/10/23/chat-app-actioncable
+permalink: /2017/10/28/chat-app-actioncable
 date: '2017-10-28 16:16:01 -0600'
 ---
 
