@@ -275,12 +275,18 @@ The problem with this, is that the message partial does not have access to the `
 
 ## Rendering Messages Solution
 
-After perusing through [RailsGuides](http://guides.rubyonrails.org/layouts_and_rendering.html#passing-local-variables) I (_cough...forgot..._) remembered that you can pass local variables into partials in order for them to have access to them.
+My solution involved creating a separate message partial for the "other user", and iterating over all of the chat messages while conditionally rendering each message based on whether the message user was the current user or not. I also had to explicitly pass in the message local variable.
 
 ```ruby
   <div id="chat-messages">
     <div id="messages" data-chat-id="<%= @chat.id %>">
-      <%= render @chat.messages, locals: {current_user: current_user} %>
+      <% @chat.messages.each do |msg| %>
+        <% if msg.user == current_user %>
+          <%= render partial: 'messages/message', locals: { message: msg } %>
+        <% else %>
+          <%= render partial: 'messages/othermessage', locals: { message: msg } %>
+        <% end %>
+      <% end %>
     </div>
   </div>
 ```

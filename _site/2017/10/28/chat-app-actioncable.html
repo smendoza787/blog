@@ -315,14 +315,20 @@ ongoing conversation can take place between a browser and the server.</p>
 
 <h2 id="rendering-messages-solution">Rendering Messages Solution</h2>
 
-<p>After perusing through <a href="http://guides.rubyonrails.org/layouts_and_rendering.html#passing-local-variables">RailsGuides</a> I (<em>cough…forgot…</em>) remembered that you can pass local variables into partials in order for them to have access to them.</p>
+<p>My solution involved creating a separate message partial for the “other user”, and iterating over all of the chat messages while conditionally rendering each message based on whether the message user was the current user or not. I also had to explicitly pass in the message local variable.</p>
 
 <div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"chat-messages"</span><span class="o">&gt;</span>
     <span class="o">&lt;</span><span class="n">div</span> <span class="nb">id</span><span class="o">=</span><span class="s2">"messages"</span> <span class="n">data</span><span class="o">-</span><span class="n">chat</span><span class="o">-</span><span class="nb">id</span><span class="o">=</span><span class="s2">"&lt;%= @chat.id %&gt;"</span><span class="o">&gt;</span>
-      <span class="o">&lt;</span><span class="sx">%= render @chat.messages, locals: {current_user: current_user} %&gt;
-    &lt;/div&gt;
-  &lt;/div&gt;
-</span></code></pre>
+      <span class="o">&lt;</span><span class="sx">% @chat.messages.each </span><span class="k">do</span> <span class="o">|</span><span class="n">msg</span><span class="o">|</span> <span class="sx">%&gt;
+        &lt;% if msg.user == current_user %&gt;</span>
+          <span class="o">&lt;</span><span class="sx">%= render partial: 'messages/message', locals: { message: msg } %&gt;
+        &lt;% else %&gt;
+          &lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s1">'messages/othermessage'</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span> <span class="ss">message: </span><span class="n">msg</span> <span class="p">}</span> <span class="o">%&gt;</span>
+        <span class="o">&lt;</span><span class="sx">% end </span><span class="o">%&gt;</span>
+      <span class="o">&lt;</span><span class="sx">% end </span><span class="o">%&gt;</span>
+    <span class="o">&lt;</span><span class="sr">/div&gt;
+  &lt;/</span><span class="n">div</span><span class="o">&gt;</span>
+</code></pre>
 </div>
 
 <p>This allowed me to access the <code class="highlighter-rouge">current_user</code> variable, and compare <code class="highlighter-rouge">current_user.id</code> and <code class="highlighter-rouge">message.user.id</code> in order to apply different classes to the message div.</p>
