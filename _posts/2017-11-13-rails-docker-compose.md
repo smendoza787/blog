@@ -201,4 +201,6 @@ If you need to stop the container, you can just use `Ctrl+C`
 
 The sky is the limit when you are building with Docker. Now you have the opportunity to add a lot more services running on different containers, and add them to your `docker-compose.yml` in order to integrate them into your application.
 
-I'm really excited to dive even deeper into Docker and master this awesome tool that's changing the way applications are built.
+I'm really excited to dive even deeper into Docker and master this awesome tool that's changing the way applications are built!
+
+![giphy](https://media.giphy.com/media/oLfxWQMvFKwGk/giphy.gif)
