@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Setting Up a Rails App With Docker Compose &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-11-13 14:16:01 -0800">November 13, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Setting Up a Rails App With Docker Compose</h1>
+  <div class="post-line"></div>
+
+  <p>In my last post I explained a little bit about what Docker is and why it’s so nifty and useful.</p>
+
+<p>In this post I wanted to demonstrate some real-world Docker usage by setting up a simple Rails app within a Docker container. Let’s get started!</p>
+
+<h2 id="useful-terms">Useful Terms</h2>
+
+<p>Here are a couple of terms you’ll see being thrown around in the Docker ecosystem:</p>
+
+<p><strong>Dockerfile</strong>: the Dockerfile contains the primary set of information and instructions for your Docker container. This is where you would set the base image for the container, and specify any instructions or commands for the container to boot up properly.</p>
+
+<p><strong>Image:</strong> an image is the fundamental snapshot of a container, and is generally the base for anything you’d like to build on top of your container. There are official vendor images like Ubuntu or Rails that you can use to bootstrap your container and are heavily supported, as well as user-made images that are created by the community and usually based off of an official vendor image.</p>
+
+<p><strong>Container</strong>: containers are the equivalent of a full-on Virtual Machine but extremely lighter. Containers only run the application itself as opposed to an entire operating system like a VM would.</p>
+
+<p>These are a few key terms that will be mentioned a lot so it’s nice to have a decent idea of what they mean and what they do in relation to Docker.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>You need to have the Docker engine installed on your machine to run Docker images and containers. You can <a href="https://docs.docker.com/engine/installation/">click this link</a> and follow instructions to install Docker on your machine.</p>
+
+<h2 id="getting-started">Getting Started</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>mkdir DockerProject
+</code></pre>
+</div>
+
+<p>Let’s go ahead and create a new folder to build our Docker project. Feel free to name it something mundane or wonderful, I’ll just name mine DockerProject.</p>
+
+<h2 id="creating-a-dockerfile">Creating a Dockerfile</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>cd DockerProject
+touch Dockerfile
+</code></pre>
+</div>
+
+<p>In order to run a container properly and build it into an image, we need a way to pass instructions to our container once it boots up so it can install and configure all the necessary files, directories, environment variables, and dependencies.</p>
+
+<p>To accomplish this, we’re going to write out all of these instructions inside a <code class="highlighter-rouge">Dockerfile</code>.</p>
+
+<blockquote>
+  <p>A <code class="highlighter-rouge">Dockerfile</code> is a text document that contains all the commands a user
+could call on the command line to assemble an image. Using <code class="highlighter-rouge">docker build</code>
+users can create an automated build that executes several command-line
+instructions in succession.</p>
+</blockquote>
+
+<p>In our <code class="highlighter-rouge">Dockerfile</code>, type the following:</p>
+
+<pre><code class="language-dockerfile">FROM ruby:2.3.3
+RUN apt-get update -qq &amp;&amp; apt-get install -y build-essential libpq-dev nodejs
+RUN mkdir /myapp
+WORKDIR /myapp
+ADD Gemfile /myapp/Gemfile
+ADD Gemfile.lock /myapp/Gemfile.lock
+RUN bundle install
+ADD . /myapp
+</code></pre>
+
+<p>This code will copy our application code inside an image that Docker will use to run the container along with Ruby, Bundler, and all of our dependencies.</p>
+
+<p>Next we’ll create a small Gemfile that will only be responsible for installing Rails, and will then be overwritten with <code class="highlighter-rouge">rails new</code> in just a moment. We’ll also throw in an empty <code class="highlighter-rouge">Gemfile.lock</code> since our Dockerfile will need it to build our image.</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>touch Gemfile Gemfile.lock
+</code></pre>
+</div>
+
+<p>Inside our Gemfile:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="n">source</span> <span class="s1">'https://rubygems.org'</span>
+<span class="n">gem</span> <span class="s1">'rails'</span><span class="p">,</span> <span class="s1">'5.0.0.1'</span>
+</code></pre>
+</div>
+
+<h2 id="docker-compose">Docker Compose</h2>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>touch docker-compose.yml
+</code></pre>
+</div>
+
+<p>Since our simple application will be a distributed application consisting of a Rails app and a database, each of these services will be run inside their own containers.</p>
+
+<p>In order for our containers to collaborate correctly, we’ll create a <code class="highlighter-rouge">docker-compose.yml</code> file that will describe the services that make up our app, and include the configuration needed to compose them together and expose the web app’s port.</p>
+
+<p>In our newly created <code class="highlighter-rouge">docker-compose.yml</code> file:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>version: '3'
+services:
+  db:
+    image: postgres
+  web:
+    build: .
+    command: bundle exec rails s -p 3000 -b '0.0.0.0'
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+</code></pre>
+</div>
+
+<h2 id="building-a-docker-image">Building a Docker Image</h2>
+
+<p>With our 4 files in place, now we can finally build our image.</p>
+
+<p>In your terminal, run the command:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose run web rails new . --force --database=postgresql
+</code></pre>
+</div>
+
+<p>This command will first build the image for our <code class="highlighter-rouge">web</code> service using the <code class="highlighter-rouge">Dockerfile</code> we created earlier, then it will generate a new rails app inside of our directory.</p>
+
+<div class="language-bash highlighter-rouge"><pre class="highlight"><code><span class="c"># /Users/sergiomendoza/Desktop/DockerProject</span>
+
+<span class="gp">$ </span>ls -l
+
+total 64
+-rw-r--r--   1 sergiomendoza  staff   222 Nov 17 21:21 Dockerfile
+-rw-r--r--   1 sergiomendoza  staff  1738 Nov 17 21:27 Gemfile
+-rw-r--r--   1 sergiomendoza  staff  4429 Nov 17 21:28 Gemfile.lock
+-rw-r--r--   1 sergiomendoza  staff   374 Nov 17 21:27 README.md
+-rw-r--r--   1 sergiomendoza  staff   227 Nov 17 21:27 Rakefile
+drwxr-xr-x  10 sergiomendoza  staff   320 Nov 17 21:27 app
+drwxr-xr-x   8 sergiomendoza  staff   256 Nov 17 21:28 bin
+drwxr-xr-x  14 sergiomendoza  staff   448 Nov 17 21:27 config
+-rw-r--r--   1 sergiomendoza  staff   130 Nov 17 21:27 config.ru
+drwxr-xr-x   3 sergiomendoza  staff    96 Nov 17 21:27 db
+-rw-r--r--   1 sergiomendoza  staff   211 Nov 17 21:25 docker-compose.yml
+drwxr-xr-x   4 sergiomendoza  staff   128 Nov 17 21:27 lib
+drwxr-xr-x   4 sergiomendoza  staff   128 Nov 17 21:38 log
+drwxr-xr-x   9 sergiomendoza  staff   288 Nov 17 21:27 public
+drwxr-xr-x   9 sergiomendoza  staff   288 Nov 17 21:27 <span class="nb">test
+</span>drwxr-xr-x   7 sergiomendoza  staff   224 Nov 17 21:38 tmp
+drwxr-xr-x   3 sergiomendoza  staff    96 Nov 17 21:27 vendor
+</code></pre>
+</div>
+
+<p>Whenever our project’s <code class="highlighter-rouge">Gemfile</code> or <code class="highlighter-rouge">Dockerfile</code> changes, we need to rebuild the image for the changes to update:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose build
+</code></pre>
+</div>
+
+<p>Our rails app is now officially bootable, sort of…</p>
+
+<h2 id="connecting-the-database">Connecting the database</h2>
+
+<p>By default, Rails expects a database to be running on <code class="highlighter-rouge">localhost</code> - so you need to point it at our <code class="highlighter-rouge">db</code> container instead.</p>
+
+<p>In <code class="highlighter-rouge">config/database.yml</code> replace it’s content with the following:</p>
+
+<div class="language-yml highlighter-rouge"><pre class="highlight"><code><span class="s">default</span><span class="pi">:</span> <span class="nl">&amp;default</span>
+  <span class="s">adapter</span><span class="pi">:</span> <span class="s">postgresql</span>
+  <span class="s">encoding</span><span class="pi">:</span> <span class="s">unicode</span>
+  <span class="s">host</span><span class="pi">:</span> <span class="s">db</span>
+  <span class="s">username</span><span class="pi">:</span> <span class="s">postgres</span>
+  <span class="s">password</span><span class="pi">:</span>
+  <span class="s">pool</span><span class="pi">:</span> <span class="s">5</span>
+
+<span class="s">development</span><span class="pi">:</span>
+  <span class="s">&lt;&lt;</span><span class="pi">:</span> <span class="nv">*default</span>
+  <span class="s">database</span><span class="pi">:</span> <span class="s">myapp_development</span>
+
+
+<span class="s">test</span><span class="pi">:</span>
+  <span class="s">&lt;&lt;</span><span class="pi">:</span> <span class="nv">*default</span>
+  <span class="s">database</span><span class="pi">:</span> <span class="s">myapp_test</span>
+</code></pre>
+</div>
+
+<p>Now we can boot our application with docker-compose up:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose up
+</code></pre>
+</div>
+
+<p>If everything went smoothly, you should see some PostgreSQL output and finally a running rails server!</p>
+
+<p><strong>Finally,</strong> we need to create a database.</p>
+
+<p>In another terminal, run:</p>
+
+<div class="highlighter-rouge"><pre class="highlight"><code>docker-compose run web rake db:create
+</code></pre>
+</div>
+
+<p>And we’re done! You can head over to <code class="highlighter-rouge">http://localhost:3000</code> on a web browser and see the welcome page!</p>
+
+<p>If you need to stop the container, you can just use <code class="highlighter-rouge">Ctrl+C</code></p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>The sky is the limit when you are building with Docker. Now you have the opportunity to add a lot more services running on different containers, and add them to your <code class="highlighter-rouge">docker-compose.yml</code> in order to integrate them into your application.</p>
+
+<p>I’m really excited to dive even deeper into Docker and master this awesome tool that’s changing the way applications are built.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/11/06/fiddling-with-docker" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>

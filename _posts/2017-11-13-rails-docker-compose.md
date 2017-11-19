@@ -120,6 +120,8 @@ docker-compose run web rails new . --force --database=postgresql
 This command will first build the image for our `web` service using the `Dockerfile` we created earlier, then it will generate a new rails app inside of our directory.
 
 ```bash
+# /Users/sergiomendoza/Desktop/DockerProject
+
 $ ls -l
 
 total 64
@@ -142,3 +144,61 @@ drwxr-xr-x   7 sergiomendoza  staff   224 Nov 17 21:38 tmp
 drwxr-xr-x   3 sergiomendoza  staff    96 Nov 17 21:27 vendor
 ```
 
+Whenever our project's `Gemfile` or `Dockerfile` changes, we need to rebuild the image for the changes to update:
+
+```
+docker-compose build
+```
+
+Our rails app is now officially bootable, sort of...
+
+## Connecting the database
+
+By default, Rails expects a database to be running on `localhost` - so you need to point it at our `db` container instead.
+
+In `config/database.yml` replace it's content with the following:
+
+```yml
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  host: db
+  username: postgres
+  password:
+  pool: 5
+
+development:
+  <<: *default
+  database: myapp_development
+
+
+test:
+  <<: *default
+  database: myapp_test
+```
+
+Now we can boot our application with docker-compose up:
+
+```
+docker-compose up
+```
+
+If everything went smoothly, you should see some PostgreSQL output and finally a running rails server!
+
+**Finally,** we need to create a database.
+
+In another terminal, run:
+
+```
+docker-compose run web rake db:create
+```
+
+And we're done! You can head over to `http://localhost:3000` on a web browser and see the welcome page!
+
+If you need to stop the container, you can just use `Ctrl+C`
+
+## Conclusion
+
+The sky is the limit when you are building with Docker. Now you have the opportunity to add a lot more services running on different containers, and add them to your `docker-compose.yml` in order to integrate them into your application.
+
+I'm really excited to dive even deeper into Docker and master this awesome tool that's changing the way applications are built.
