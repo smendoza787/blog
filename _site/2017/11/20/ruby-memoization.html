@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Using Memoization in Ruby For Efficient Code &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-11-20 14:16:01 -0800">November 20, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Using Memoization in Ruby For Efficient Code</h1>
+  <div class="post-line"></div>
+
+  <p>Memoization is a technique that greatly improves the speed of your accessor methods. It caches the results of memory- or time-intensive operations, that way the work is only done once. Memoization is used so often in Rails, that it was once included as a built-in module in the Rails source code. The module was eventually ditched in favor of a common memoization pattern that we’ll be discussing shortly.</p>
+
+<h2 id="basic-memoization">Basic Memoization</h2>
+
+<p>This is a common memoization pattern in Ruby:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>     <span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+          <span class="k">def</span> <span class="nf">instagram_followers</span>
+               <span class="vi">@instagram_followers</span> <span class="o">||=</span> <span class="n">instagram_user</span><span class="p">.</span><span class="nf">followers</span>
+          <span class="k">end</span>
+     <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>In the code above, the <code class="highlighter-rouge">||=</code> basically translates to:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code><span class="vi">@instagram_followers</span> <span class="o">=</span> <span class="vi">@instagram_followers</span> <span class="o">||</span> <span class="n">instagram_user</span><span class="p">.</span><span class="nf">followers</span>
+</code></pre>
+</div>
+
+<p>That means the first time <code class="highlighter-rouge">instagram_followers</code> is called, <code class="highlighter-rouge">@instagram_followers</code> will be nil/falsy and will be set to <code class="highlighter-rouge">instagram_user.followers</code> by default. Every method call made after the initial one will then return the cached <code class="highlighter-rouge">@instgram_followers</code> variable. This is really efficient, because we only have to make a network call once, and the response will be stored inside the <code class="highlighter-rouge">@instagram_followers</code> variable for the method to access quickly.</p>
+
+<h2 id="multi-line-memoization">Multi-line Memoization</h2>
+
+<p>The solution above was simple enough to fit on a single line. But what if we wanted to test for different values first? Here is the most common way to implement memoization on multiple lines:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>     <span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+          <span class="k">def</span> <span class="nf">main_address</span>
+               <span class="vi">@main_address</span> <span class="o">||=</span> <span class="k">begin</span>
+                    <span class="n">maybe_main_address</span> <span class="o">=</span> <span class="n">home_address</span> <span class="k">if</span> <span class="n">prefers_home_address?</span>
+                    <span class="n">maybe_main_address</span> <span class="o">=</span> <span class="n">work_address</span> <span class="k">unless</span> <span class="n">maybe_main_address</span>
+                    <span class="n">maybe_main_address</span> <span class="o">=</span> <span class="n">addresses</span><span class="p">.</span><span class="nf">first</span> <span class="k">unless</span> <span class="n">maybe_main_address</span>
+               <span class="k">end</span>
+          <span class="k">end</span>
+     <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>The <code class="highlighter-rouge">begin..end</code> creates a clock of code in Ruby that can be treated as a single thing.</p>
+
+<h2 id="what-the-nil">What the nil?</h2>
+
+<p>These patterns are great, but they do a good job of hiding a detrimental effect. In the first example, what if the user didn’t have an instagram account and the instagram followers API returned <code class="highlighter-rouge">nil</code>? In the next example, what if the user didn’t have any addresses, and the block returned <code class="highlighter-rouge">nil</code>?</p>
+
+<p>Every time we call the method, the instance variable would be <code class="highlighter-rouge">nil</code>, thus performing the expensive operation each time despite our memoization efforts.</p>
+
+<p>In order to work around this, we would have to differentiate between <code class="highlighter-rouge">nil</code> and <code class="highlighter-rouge">undefined</code>:</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+    <span class="k">def</span> <span class="nf">instagram_followers</span>
+      <span class="k">return</span> <span class="vi">@instagram_followers</span> <span class="k">if</span> <span class="n">defined?</span> <span class="vi">@instagram_followers</span>
+      <span class="vi">@instagram_followers</span> <span class="o">=</span> <span class="n">instagram_user</span><span class="p">.</span><span class="nf">followers</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+    <span class="k">def</span> <span class="nf">main_address</span>
+      <span class="k">return</span> <span class="vi">@main_address</span> <span class="k">if</span> <span class="n">defined?</span> <span class="vi">@main_address</span>
+      <span class="vi">@main_address</span> <span class="o">=</span> <span class="k">begin</span>
+        <span class="n">main_address</span> <span class="o">=</span> <span class="n">home_address</span> <span class="k">if</span> <span class="n">prefers_home_address?</span>
+        <span class="n">main_address</span> <span class="o">||=</span> <span class="n">work_address</span>
+        <span class="n">main_address</span> <span class="o">||=</span> <span class="n">addresses</span><span class="p">.</span><span class="nf">first</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>These appear to be hacky solutions, but they work with <code class="highlighter-rouge">nil</code>, <code class="highlighter-rouge">false</code> and everything else.</p>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>These are just a couple of ways to memoize your methods in order to make your applications more speed and memory-efficient. These patterns might make your code a little bit more unsightly, which is why someone created a RubyGem called <a href="https://github.com/matthewrudy/memoist">Memoist</a> in order to provide a cleaner and more friendly API. But it is always nice to see how patterns work under the hood, and perhaps you can create your own RubyGem!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/11/13/rails-docker-compose" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
