@@ -25,19 +25,19 @@ I wanted to write this post to cover some of the things I have been doing to bui
 
 Before I get into it, I wanted to mention a few tools that I highly recommend for making contacts online. I'm sure there are a ton of resources, but these are programs I've found really helpful:
 
-### [LinkedIn](https://www.linkedin.com/):
-  Pretty self-explanatory. LinkedIn is a social networking site specifically geared towards helping people make professional connections. If you don't have one I suggest you take a nice-looking photo of your beautiful face, and create a profile so you can exponentially raise your chances at getting noticed and taken seriously.
+### [LinkedIn](https://www.linkedin.com/)
+Pretty self-explanatory. LinkedIn is a social networking site specifically geared towards helping people make professional connections. If you don't have one I suggest you take a nice-looking photo of your beautiful face, and create a profile so you can exponentially raise your chances at getting noticed and taken seriously.
 
-### [Mailspring](https://getmailspring.com/):
+### [Mailspring](https://getmailspring.com/)
   The only mail client I've used since I've discovered it. Mailspring is awesome because comes with great organizational tools when it comes to email, like snoozing emails to a later date, sending emails at a scheduled time, and read receipt notifications. The read receipts might be a little weird, but I think it helps a lot in terms of finding out which people have been paying more attention to you.
 
-### [Trello](https://trello.com/):
+### [Trello](https://trello.com/)
   Trello has been a swiss army knife of organizational tools for me. I use it every time I start a new project, or when I have a sudden bout of inspiration. In regards to networking, its helped me organize everything I've found about a person (email, github, portfolio site) into a simple snapshot that I can add, edit, and rearrange.
 
-### [Github](https://github.com/):
+### [Github](https://github.com/)
   Looking at other people's code helps tremendously when learning to code, and also helps when trying to learn more about a person. Since we are trying to reach out to other developers, its nice to be able to look at some of their work to get a better sense of who they are, and what they like to work on. It's also a great conversation starter! Maybe one of the projects they worked on resonated with you, and would be a great talking point to bring up.
 
-### [Google Calendar/Hangouts](https://hangouts.google.com/):
+### [Google Calendar/Hangouts](https://hangouts.google.com/)
   The easiest no-brainer solution for scheduling networking meetings. Once you're able to agree upon a time with someone, its as simple as adding the event to your Google Calendar, and adding the persons email to the event to automatically schedule a Hangout.
 
 ## Finding People to Reach Out To
