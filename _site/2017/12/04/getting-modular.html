@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Getting Modular With CSS in React &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-12-04 14:16:01 -0800">December 04, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Getting Modular With CSS in React</h1>
+  <div class="post-line"></div>
+
+  <p>I’ve been working with React for a while now, and one thing that always perplexed me was file structure organization. As the sole developer of my side projects, I never had a style-guide to follow when structuring my code.</p>
+
+<p>As a result, my project’s file structures have always been a bit of a mess. I was so hyper-focused on my React components that I paid little attention to where my CSS files would end up. This lack of TLC to my CSS files ended up in a hard-to-read mess of CSS.</p>
+
+<p>I felt that there was a solution somewhere, so I decided to hit GitHub hard and peruse through the source code of random React projects.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>I ended up finding a solution that I really liked, and followed the pattern of modularity that React is most-loved for.</p>
+
+<p>A well-done component should be a piece of code that contains all of it’s dependencies, and has the ability to be inserted into (or removed from) any project without breaking the rest of your code. This includes your CSS!</p>
+
+<p>My solution was to start treating components as all-inclusive folders. These folders would include the component itself, the CSS for that component, and any exclusive dependencies it might need.</p>
+
+<h2 id="example">Example</h2>
+
+<p>For example, let’s take a simple Header component. It’ll render a simple H1 header with text and styling.</p>
+
+<p>I’ve created a folder with the name of the component (<code class="highlighter-rouge">Header</code>) inside of my components folder. Within this folder, I’ll be putting the actual component, the CSS file it depends on, and any other dependencies it might need.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="c1">// /src/components/Header/index.js</span>
+
+  <span class="kr">import</span> <span class="nx">React</span> <span class="nx">from</span> <span class="s1">'react'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="s1">'./index.css'</span><span class="p">;</span>
+
+  <span class="kr">class</span> <span class="nx">Header</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+    <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">h1</span> <span class="nx">className</span><span class="o">=</span><span class="s2">"main-header"</span><span class="o">&gt;</span><span class="nx">Hello</span> <span class="nx">World</span><span class="o">!&lt;</span><span class="nx">h1</span><span class="o">&gt;</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>For the CSS file, we insert it into our <code class="highlighter-rouge">Header</code> directory:</p>
+
+<div class="language-css highlighter-rouge"><pre class="highlight"><code>  <span class="c">/* /src/components/Header/index.css */</span>
+
+  <span class="nc">.main-header</span> <span class="p">{</span>
+    <span class="nl">background-color</span><span class="p">:</span> <span class="no">red</span><span class="p">;</span>
+    <span class="nl">font-size</span><span class="p">:</span> <span class="m">2em</span><span class="p">;</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>This works perfectly, because we can simply import the component folder itself, and it will automatically import the <code class="highlighter-rouge">index.js</code> file inside of our component’s folder by default.</p>
+
+<p>If we wanted to render our <code class="highlighter-rouge">Header</code> component inside of our <code class="highlighter-rouge">App</code> component, we could simply insert it like so:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="c1">// /src/App.js</span>
+
+  <span class="kr">import</span> <span class="nx">React</span><span class="p">,</span> <span class="p">{</span> <span class="nx">Component</span> <span class="p">}</span> <span class="nx">from</span> <span class="s1">'react'</span><span class="p">;</span>
+  <span class="kr">import</span> <span class="nx">Header</span> <span class="nx">from</span> <span class="s1">'./components/Header'</span><span class="p">;</span>
+
+  <span class="kr">class</span> <span class="nx">App</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+    <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">Header</span> <span class="o">/&gt;</span>
+      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>As a result of this, we can use this component folder structure to drop folders in whatever project we want, and that folder will contain the component, it’s own CSS and any dependencies. Amazing!</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/11/27/making-connections" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
