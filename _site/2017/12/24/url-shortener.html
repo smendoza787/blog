@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>
+    
+      Building a URL Shortener with React and Rails! &middot; Do Or Dev
+    
+  </title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://smendoza.me/blog/styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+</head>
+
+
+  <body>
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="https://smendoza.me/blog">
+          <h2 class="nav-title">Do Or Dev</h2>
+        </a>
+        <ul>
+          <li><a href="https://smendoza.me/blog/about">About</a></li>
+          <li><a href="https://smendoza.me/blog">Posts</a></li>
+          <li><a href="https://smendoza.me">Portfolio</a></li>
+        </ul>
+    </div>
+  </nav>
+
+    <main>
+      <div class="post">
+  <div class="post-info">
+    <span>Written by&nbsp;</span>Sergio
+
+    
+      <br>
+      <span>on&nbsp;</span><time datetime="2017-12-24 14:16:01 -0800">December 24, 2017</time>
+    
+  </div>
+
+  <h1 class="post-title">Building a URL Shortener with React and Rails!</h1>
+  <div class="post-line"></div>
+
+  <h1 id="throwing-down-the-development-gauntlet">Throwing Down The Development Gauntlet</h1>
+
+<p>Recently I was tasked with creating a URL shortener application in whatever language or framework that I wanted. I was given a mock-up PDF of what the final product was going to look like, along with a folder of jpg resources. I was loving this because I always get hung up on the design of my projects before I even scratch the surface of the logic component of the project. This way, I was given all my tools and a specific end goal and just had to deliver results: an app that would shorten a URL, and would actually redirect to the original URL when pasted into a browser.</p>
+
+<h1 id="whats-the-plan">Whats The Plan?</h1>
+
+<p>The stack I had in mind was an absolute no-brainer. React and Rails are my bread and butter and this project was no exception. I knew Rails would be perfect to generate the <code class="highlighter-rouge">Link</code> model I needed that would store the original URL along with it’s corresponding “short code”.</p>
+
+<p>React was the perfect choice on the front end because there were a few dynamic elements required in the project (When the short URL is copied, ‘Copied!’ appears under the input field). Since I have been pumping out React components for the past year I figured I could get this project up and running in no time. :)</p>
+
+<h1 id="party-in-the-backend">Party In The Backend</h1>
+
+<p>The backend of this project is fairly straightforward. In a URL-shortening app, the only model we need is a <code class="highlighter-rouge">Link</code>. A <code class="highlighter-rouge">Link</code> has a randomly-generated short <code class="highlighter-rouge">code</code> that will be used to find the entry in the database, and grab its corresponding <code class="highlighter-rouge">code</code>.</p>
+
+<h2 id="link-object">Link Object</h2>
+
+<p><img src="https://i.imgur.com/6pQm05G.png" alt="link_object" /></p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="k">class</span> <span class="nc">Link</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+    <span class="n">validates</span> <span class="ss">:original_url</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :create</span>
+    <span class="n">validates_format_of</span> <span class="ss">:original_url</span><span class="p">,</span>
+      <span class="ss">with: </span><span class="sr">/\A(?:(?:http|https):\/\/)?([-a-zA-Z0-9.]{2,256}\.[a-z]{2,4})\b(?:\/[-a-zA-Z0-9@,!:%_\+.~#?&amp;\/\/=]*)?\z/</span>
+    <span class="n">before_create</span> <span class="ss">:generate_code_and_url</span>
+
+    <span class="k">def</span> <span class="nf">generate_code</span>
+      <span class="c1"># create array of all possible letters and numbers</span>
+      <span class="n">chars</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'0'</span><span class="p">.</span><span class="nf">.</span><span class="s1">'9'</span><span class="p">,</span> <span class="s1">'A'</span><span class="p">.</span><span class="nf">.</span><span class="s1">'Z'</span><span class="p">,</span> <span class="s1">'a'</span><span class="p">.</span><span class="nf">.</span><span class="s1">'z'</span><span class="p">].</span><span class="nf">map</span><span class="p">{</span><span class="o">|</span><span class="n">range</span><span class="o">|</span> <span class="n">range</span><span class="p">.</span><span class="nf">to_a</span><span class="p">}.</span><span class="nf">flatten</span>
+
+      <span class="c1"># assign value to long_url</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">code</span> <span class="o">=</span> <span class="mi">6</span><span class="p">.</span><span class="nf">times</span><span class="p">.</span><span class="nf">map</span><span class="p">{</span><span class="n">chars</span><span class="p">.</span><span class="nf">sample</span><span class="p">}.</span><span class="nf">join</span>
+
+      <span class="c1"># to check for duplicates we'll generate a new string until it's unique in the DB</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">code</span> <span class="o">=</span> <span class="mi">6</span><span class="p">.</span><span class="nf">times</span><span class="p">.</span><span class="nf">map</span><span class="p">{</span><span class="n">chars</span><span class="p">.</span><span class="nf">sample</span><span class="p">}.</span><span class="nf">join</span> <span class="k">until</span> <span class="no">Link</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">code: </span><span class="nb">self</span><span class="p">.</span><span class="nf">code</span><span class="p">).</span><span class="nf">nil?</span>
+
+      <span class="c1"># return new short url</span>
+      <span class="k">return</span> <span class="nb">self</span><span class="p">.</span><span class="nf">code</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>To create a valid <code class="highlighter-rouge">Link</code>, all it needs is a valid <code class="highlighter-rouge">original_url</code> (containing ‘http’ and ‘.com’). Upon creation, the <code class="highlighter-rouge">Link.generate_code</code> method is called, and generates a random string of 6 alphanumeric characters. It will generate a new string until <code class="highlighter-rouge">Link.find_by(code: self.code)</code> returns <code class="highlighter-rouge">nil</code>.</p>
+
+<p>I felt the logic for generating the short code was sufficient for this project, as there around 56 billion unique combinations for a code 6 characters long. This wouldn’t scale for a project that had millions of users, but for the potential 25+ people that will use this project I thought it would be plenty! Also, adding an extra character to the string would be extremely simple and result in exponentially more combinations.</p>
+
+<h2 id="api-routes">API Routes</h2>
+
+<p>With our model in place, we just need to make sure that we configure our routes properly and make sure they are RESTful. With this simple project we only have a ‘/links’ endpoint that we’ll make POST requests to in order to create our Links.</p>
+
+<div class="language-ruby highlighter-rouge"><pre class="highlight"><code>  <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+    <span class="n">resources</span> <span class="ss">:links</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:create</span><span class="p">]</span>
+  <span class="k">end</span>
+</code></pre>
+</div>
+
+<p>I’ll admit this is an extremely simple API. I initially thought I could use the Rails API to create a <code class="highlighter-rouge">'/:code</code> route that would connect to a <code class="highlighter-rouge">Links#Show</code> controller method that would <code class="highlighter-rouge">redirect_to</code> the target URL, but I decided to handle the re-routing on the front-end via React Router.</p>
+
+<h1 id="react-front-end">React Front End</h1>
+
+<p><img src="https://i.imgur.com/qJAQyrA.jpg" alt="react" /></p>
+
+<p>Most of the components on the page are presentational and stateless. We have a <code class="highlighter-rouge">background-image</code> set to <code class="highlighter-rouge">cover</code> to stretch across the entire page and remain responsive. With the magic of <a href="https://css-tricks.com/snippets/css/a-guide-to-flexbox/">flexbox</a>, I was able to position the presentational components exactly where I wanted them for desktop and mobile.</p>
+
+<p>The two components I want to highlight are the <code class="highlighter-rouge">CodeRedirect</code> and <code class="highlighter-rouge">UrlShortener</code> components because that is where 99.99% of the magic happens.</p>
+
+<h2 id="urlshortener-component">UrlShortener Component</h2>
+
+<p>The <em>piece de resistance</em> of the project is the <code class="highlighter-rouge">UrlShortener</code> component. It is in charge of keeping track of it’s state to determine whether or not it’s a good time to make a <code class="highlighter-rouge">POST</code> request when the ‘Shorten URL’ button is clicked.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kr">class</span> <span class="nx">UrlShortener</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+    <span class="nx">constructor</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kr">super</span><span class="p">()</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="na">input</span><span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+        <span class="na">output</span><span class="p">:</span> <span class="s1">''</span><span class="p">,</span>
+        <span class="na">isDisabled</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="na">linkSelected</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="p">...</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>We’re keeping track of the <code class="highlighter-rouge">input</code> and <code class="highlighter-rouge">output</code> fields through state for obvious reasons, and we’re keeping track of the <code class="highlighter-rouge">linkSelected</code> boolean so we can automatically highlight/select the shortlink once a user hits the ‘Shorten URL’ button.</p>
+
+<h2 id="the-shortening"><em>The Shortening</em></h2>
+
+<p>When our ‘Shorten URL’ button is clicked, there are a series of things that need to happen.</p>
+
+<ol>
+  <li>Make sure there is a valid link in the input field</li>
+  <li>Create a <code class="highlighter-rouge">formData</code> object to send in the body of our <code class="highlighter-rouge">POST</code> request</li>
+  <li>Make a <code class="highlighter-rouge">POST</code> to the <code class="highlighter-rouge">'/links'</code> endpoint of our API</li>
+  <li>Grab the <code class="highlighter-rouge">code</code> from the returned created Link object and pipe it into our <code class="highlighter-rouge">output</code> component state</li>
+</ol>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="nx">onShortenClick</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">input</span><span class="p">.</span><span class="nx">includes</span><span class="p">(</span><span class="s1">'http'</span><span class="p">))</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">object</span> <span class="o">=</span> <span class="p">{</span> <span class="na">link</span><span class="p">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">input</span> <span class="p">}</span>
+      <span class="kd">var</span> <span class="nx">formData</span> <span class="o">=</span> <span class="nx">objectToFormData</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span>
+
+      <span class="nx">fetch</span><span class="p">(</span><span class="s1">'/links'</span><span class="p">,</span> <span class="p">{</span>
+        <span class="na">method</span><span class="p">:</span> <span class="s1">'POST'</span><span class="p">,</span>
+        <span class="na">body</span><span class="p">:</span> <span class="nx">formData</span>
+      <span class="p">}).</span><span class="nx">then</span><span class="p">(</span><span class="nx">resp</span> <span class="o">=&gt;</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">linkObj</span> <span class="o">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">({</span> <span class="na">output</span><span class="p">:</span> <span class="err">`</span><span class="nx">$</span><span class="p">{</span><span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span><span class="p">}</span><span class="nx">$</span><span class="p">{</span><span class="nx">linkObj</span><span class="p">.</span><span class="nx">code</span><span class="p">}</span><span class="err">`</span><span class="p">,</span> <span class="na">isDisabled</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span> <span class="na">linkSelected</span><span class="p">:</span> <span class="kc">true</span> <span class="p">}))</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Putting our methods into our <code class="highlighter-rouge">UrlShortener</code> looks like this:</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span>
+      <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">"url-shortener"</span>
+          <span class="nx">style</span><span class="o">=&gt;</span>
+        <span class="o">&lt;</span><span class="nx">h1</span><span class="o">&gt;</span><span class="nx">Shorten</span> <span class="nx">any</span> <span class="nx">URL</span> <span class="k">in</span> <span class="nx">less</span> <span class="nx">than</span> <span class="nx">a</span> <span class="nx">second</span><span class="p">.</span><span class="o">&lt;</span><span class="sr">/h1</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">h2</span><span class="o">&gt;</span><span class="nx">Make</span> <span class="nx">it</span> <span class="nx">easier</span> <span class="nx">to</span> <span class="nx">send</span> <span class="nx">and</span> <span class="nx">embed</span> <span class="nx">links</span><span class="p">.</span><span class="o">&lt;</span><span class="sr">/h2</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">UrlInput</span>
+          <span class="nx">onChange</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">onInputChange</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">)}</span>
+          <span class="nx">longUrl</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">input</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">UrlOutput</span>
+          <span class="nx">shortUrl</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">output</span><span class="p">}</span>
+          <span class="nx">isDisabled</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">isDisabled</span><span class="p">}</span>
+          <span class="nx">linkSelected</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">linkSelected</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="nx">MainButton</span>
+          <span class="nx">linkSelected</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">linkSelected</span><span class="p">}</span>
+          <span class="nx">onShortenClick</span><span class="o">=</span><span class="p">{(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">onShortenClick</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span>
+          <span class="nx">onCopyClick</span><span class="o">=</span><span class="p">{(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">onCopyClick</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span>
+          <span class="nx">shortUrl</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">output</span><span class="p">}</span> <span class="sr">/</span><span class="err">&gt;
+</span>      <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>    <span class="p">)</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>Now we can generate a short link associated with the URL that we just shortened. Awesome!</p>
+
+<h2 id="dynamic-hover-effect-extravaganza">Dynamic Hover Effect Extravaganza</h2>
+
+<p>There are still a few dynamic features I needed to implement. One feature was a simple label that reads <code class="highlighter-rouge">Press CMD + C to copy</code> when you hover over the output field, and then flashes <code class="highlighter-rouge">Copied!</code> when you actually copy the text.</p>
+
+
+</div>
+
+<div class="pagination">
+  
+  
+    <a href="https://smendoza.me/blog/2017/12/18/pipeline-operator" class="right arrow">&#8594;</a>
+  
+
+  <a href="#" class="top">Top</a>
+</div>
+
+    </main>
+
+    <footer>
+      <span>
+        <a href="https://github.com/smendoza787">Github</a>
+        <a href="https://twitter.com/swergi0">Twitter</a>
+        <a href="https://linkedin.com/in/slmendoza">LinkedIn</a>
+      </span>
+    </footer>
+  </body>
+</html>
