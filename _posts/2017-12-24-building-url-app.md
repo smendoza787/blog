@@ -11,6 +11,9 @@ date: '2017-12-24 16:16:01 -0600'
 
 Recently I was tasked with creating a URL shortener application in whatever language or framework that I wanted. I was given a mock-up PDF of what the final product was going to look like, along with a folder of jpg resources. I was loving this because I always get hung up on the design of my projects before I even scratch the surface of the logic component of the project. This way, I was given all my tools and a specific end goal and just had to deliver results: an app that would shorten a URL, and would actually redirect to the original URL when pasted into a browser.
 
+GitHub Repo: https://github.com/smendoza787/trim
+Project URL: https://smol-trim.herokuapp.com/
+
 # Whats The Plan?
 
 The stack I had in mind was an absolute no-brainer. React and Rails are my bread and butter and this project was no exception. I knew Rails would be perfect to generate the `Link` model I needed that would store the original URL along with it's corresponding "short code". 
@@ -149,4 +152,113 @@ Now we can generate a short link associated with the URL that we just shortened.
 
 ## Dynamic Hover Effect Extravaganza
 
-There are still a few dynamic features I needed to implement. One feature was a simple label that reads `Press CMD + C to copy` when you hover over the output field, and then flashes `Copied!` when you actually copy the text.
+There are still a few dynamic features I needed to implement. One feature was a simple label that reads `Press ⌘ + C to Copy` when you hover over the output field, and then flashes `Copied!` when you actually copy the text.
+
+I broke this one down into a few simple steps:
+
+1. Create 2 `div`s that contain the 'Copied!' and 'Press ⌘ + C to Copy' text respectively.
+2. These classes will render with a `hidden` class so they don't appear on page load.
+3. Create a `copy-div` CSS class that renders the div styling with rounded corners, relative positioning, etc. 
+4. Create a `handleHover` method that will toggle this class when a user hovers over the short-link field, using the component state to store an `isHovered` boolean value.
+5. Create an event listener on the short-link field that listens for a `copy` event, and will toggle the `isCopied` boolean in our component state.
+
+```javascript
+  class UrlOutput extends Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        isHovered: false,
+        isCopied: false
+      }
+
+      this.handleHover = this.handleHover.bind(this);
+      this.setCopyListener = this.setCopyListener.bind(this);
+    }
+    
+    componentDidUpdate(prevProps, prevState) {
+      if (this.props.linkSelected) {
+        let obj = this.refs.urlOutput;
+        obj.select();
+        this.setCopyListener(this.props.shortUrl);
+      }
+    }
+
+    setCopyListener(url) {
+      document.addEventListener('copy', (e) => {
+        this.setState({ isCopied: true });
+      });
+    }
+    
+    handleFocus(event) {
+      event.target.select();
+    }
+
+    handleHover() {
+      if (this.props.linkSelected) {
+        this.setState({ isHovered: !this.state.isHovered });
+      }
+    }
+
+    render() {
+      const labelClass = this.state.isHovered && !this.state.isCopied ? "copy-label" : "hidden";
+      const copiedClass = this.state.isCopied ? "copied-label" : "hidden";
+      return (
+        <div 
+          className="url-output"
+          onMouseEnter={this.handleHover}
+          onMouseLeave={this.handleHover}>
+            <h3>Shortened URL</h3>
+            <input
+              ref="urlOutput"
+              className="url-output-field"
+              type="text"
+              value={this.props.shortUrl}
+              disabled={this.props.isDisabled}
+              onFocus={(event) => this.handleFocus(event)} />
+            <div className={labelClass}>
+              Press &#8984; + C to copy
+            </div>
+            <div className={copiedClass}>
+              Copied!
+            </div>
+        </div>
+      )
+    }
+  }
+```
+
+These components make up all of the dynamic functionality of our app. But the next challenge was figuring out how to redirect the user to the specified page when they enter our short code link.
+
+# Redirecting Friends To Faraway Places
+
+I decided to handle the rerouting on the client side of the application. There is a neat variable on the `window` global object called `window.location.href`. Entering this in your console while on a webpage would return the current URL you are visiting. With JavaScript we can set this value to whatever we want, and our browser will automatically bring us to that page.
+
+I made good use of it in the `CodeRedirect` component.
+
+```javascript
+  class CodeRedirect extends Component {
+    componentWillMount() {
+      fetch(`/${this.props.match.params.code}`)
+        .then(resp => resp.json())
+        .then(link => window.location.href = link.original_url)
+    }
+    
+    render() {
+      return (
+        <div className="code-redirect">
+          <h2>Thank you for using</h2>
+          <img src={logo} alt="logo"/>
+        </div>
+      )
+    }
+  }
+```
+
+In the `componentWillMount` method, we perform our fetch request to the API which returns a `Link` object that contains the matching `code` and `original_url`. We set the `window.location.href` to the `original_url` we get returned, which returns us to our desired page! Since there was a slight delay between redirects, I figure it would be cool to add a 'splash page' with our site logo for some nice free promotion. :)
+
+# Conclusion
+
+I had a lot of fun working on this project and learned a lot! To challenge myself even further, it would be interesting to see if we can handle the redirect from the backend and test the speed/performance. You can check out the final app at https://smol-trim.herokuapp.com/.
+
+Thanks for reading!

@@ -49,6 +49,9 @@
 
 <p>Recently I was tasked with creating a URL shortener application in whatever language or framework that I wanted. I was given a mock-up PDF of what the final product was going to look like, along with a folder of jpg resources. I was loving this because I always get hung up on the design of my projects before I even scratch the surface of the logic component of the project. This way, I was given all my tools and a specific end goal and just had to deliver results: an app that would shorten a URL, and would actually redirect to the original URL when pasted into a browser.</p>
 
+<p>GitHub Repo: https://github.com/smendoza787/trim
+Project URL: https://smol-trim.herokuapp.com/</p>
+
 <h1 id="whats-the-plan">Whats The Plan?</h1>
 
 <p>The stack I had in mind was an absolute no-brainer. React and Rails are my bread and butter and this project was no exception. I knew Rails would be perfect to generate the <code class="highlighter-rouge">Link</code> model I needed that would store the original URL along with it’s corresponding “short code”.</p>
@@ -189,7 +192,118 @@
 
 <h2 id="dynamic-hover-effect-extravaganza">Dynamic Hover Effect Extravaganza</h2>
 
-<p>There are still a few dynamic features I needed to implement. One feature was a simple label that reads <code class="highlighter-rouge">Press CMD + C to copy</code> when you hover over the output field, and then flashes <code class="highlighter-rouge">Copied!</code> when you actually copy the text.</p>
+<p>There are still a few dynamic features I needed to implement. One feature was a simple label that reads <code class="highlighter-rouge">Press ⌘ + C to Copy</code> when you hover over the output field, and then flashes <code class="highlighter-rouge">Copied!</code> when you actually copy the text.</p>
+
+<p>I broke this one down into a few simple steps:</p>
+
+<ol>
+  <li>Create 2 <code class="highlighter-rouge">div</code>s that contain the ‘Copied!’ and ‘Press ⌘ + C to Copy’ text respectively.</li>
+  <li>These classes will render with a <code class="highlighter-rouge">hidden</code> class so they don’t appear on page load.</li>
+  <li>Create a <code class="highlighter-rouge">copy-div</code> CSS class that renders the div styling with rounded corners, relative positioning, etc.</li>
+  <li>Create a <code class="highlighter-rouge">handleHover</code> method that will toggle this class when a user hovers over the short-link field, using the component state to store an <code class="highlighter-rouge">isHovered</code> boolean value.</li>
+  <li>Create an event listener on the short-link field that listens for a <code class="highlighter-rouge">copy</code> event, and will toggle the <code class="highlighter-rouge">isCopied</code> boolean in our component state.</li>
+</ol>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kr">class</span> <span class="nx">UrlOutput</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+    <span class="nx">constructor</span><span class="p">(</span><span class="nx">props</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kr">super</span><span class="p">(</span><span class="nx">props</span><span class="p">);</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">state</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="na">isHovered</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="na">isCopied</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">}</span>
+
+      <span class="k">this</span><span class="p">.</span><span class="nx">handleHover</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">handleHover</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+      <span class="k">this</span><span class="p">.</span><span class="nx">setCopyListener</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">setCopyListener</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+    <span class="p">}</span>
+    
+    <span class="nx">componentDidUpdate</span><span class="p">(</span><span class="nx">prevProps</span><span class="p">,</span> <span class="nx">prevState</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">linkSelected</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">let</span> <span class="nx">obj</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">refs</span><span class="p">.</span><span class="nx">urlOutput</span><span class="p">;</span>
+        <span class="nx">obj</span><span class="p">.</span><span class="nx">select</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">setCopyListener</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">shortUrl</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nx">setCopyListener</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="s1">'copy'</span><span class="p">,</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">({</span> <span class="na">isCopied</span><span class="p">:</span> <span class="kc">true</span> <span class="p">});</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+    
+    <span class="nx">handleFocus</span><span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">select</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="nx">handleHover</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">linkSelected</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">setState</span><span class="p">({</span> <span class="na">isHovered</span><span class="p">:</span> <span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">isHovered</span> <span class="p">});</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+      <span class="kr">const</span> <span class="nx">labelClass</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">isHovered</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">isCopied</span> <span class="p">?</span> <span class="s2">"copy-label"</span> <span class="p">:</span> <span class="s2">"hidden"</span><span class="p">;</span>
+      <span class="kr">const</span> <span class="nx">copiedClass</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">.</span><span class="nx">isCopied</span> <span class="p">?</span> <span class="s2">"copied-label"</span> <span class="p">:</span> <span class="s2">"hidden"</span><span class="p">;</span>
+      <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">div</span> 
+          <span class="nx">className</span><span class="o">=</span><span class="s2">"url-output"</span>
+          <span class="nx">onMouseEnter</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">handleHover</span><span class="p">}</span>
+          <span class="nx">onMouseLeave</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">handleHover</span><span class="p">}</span><span class="o">&gt;</span>
+            <span class="o">&lt;</span><span class="nx">h3</span><span class="o">&gt;</span><span class="nx">Shortened</span> <span class="nx">URL</span><span class="o">&lt;</span><span class="sr">/h3</span><span class="err">&gt;
+</span>            <span class="o">&lt;</span><span class="nx">input</span>
+              <span class="nx">ref</span><span class="o">=</span><span class="s2">"urlOutput"</span>
+              <span class="nx">className</span><span class="o">=</span><span class="s2">"url-output-field"</span>
+              <span class="nx">type</span><span class="o">=</span><span class="s2">"text"</span>
+              <span class="nx">value</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">shortUrl</span><span class="p">}</span>
+              <span class="nx">disabled</span><span class="o">=</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">isDisabled</span><span class="p">}</span>
+              <span class="nx">onFocus</span><span class="o">=</span><span class="p">{(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">this</span><span class="p">.</span><span class="nx">handleFocus</span><span class="p">(</span><span class="nx">event</span><span class="p">)}</span> <span class="sr">/</span><span class="err">&gt;
+</span>            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="p">{</span><span class="nx">labelClass</span><span class="p">}</span><span class="o">&gt;</span>
+              <span class="nx">Press</span> <span class="o">&amp;</span><span class="err">#</span><span class="mi">8984</span><span class="p">;</span> <span class="o">+</span> <span class="nx">C</span> <span class="nx">to</span> <span class="nx">copy</span>
+            <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>            <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="p">{</span><span class="nx">copiedClass</span><span class="p">}</span><span class="o">&gt;</span>
+              <span class="nx">Copied</span><span class="o">!</span>
+            <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>        <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>These components make up all of the dynamic functionality of our app. But the next challenge was figuring out how to redirect the user to the specified page when they enter our short code link.</p>
+
+<h1 id="redirecting-friends-to-faraway-places">Redirecting Friends To Faraway Places</h1>
+
+<p>I decided to handle the rerouting on the client side of the application. There is a neat variable on the <code class="highlighter-rouge">window</code> global object called <code class="highlighter-rouge">window.location.href</code>. Entering this in your console while on a webpage would return the current URL you are visiting. With JavaScript we can set this value to whatever we want, and our browser will automatically bring us to that page.</p>
+
+<p>I made good use of it in the <code class="highlighter-rouge">CodeRedirect</code> component.</p>
+
+<div class="language-javascript highlighter-rouge"><pre class="highlight"><code>  <span class="kr">class</span> <span class="nx">CodeRedirect</span> <span class="kr">extends</span> <span class="nx">Component</span> <span class="p">{</span>
+    <span class="nx">componentWillMount</span><span class="p">()</span> <span class="p">{</span>
+      <span class="nx">fetch</span><span class="p">(</span><span class="err">`</span><span class="o">/</span><span class="nx">$</span><span class="p">{</span><span class="k">this</span><span class="p">.</span><span class="nx">props</span><span class="p">.</span><span class="nx">match</span><span class="p">.</span><span class="nx">params</span><span class="p">.</span><span class="nx">code</span><span class="p">}</span><span class="err">`</span><span class="p">)</span>
+        <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">resp</span> <span class="o">=&gt;</span> <span class="nx">resp</span><span class="p">.</span><span class="nx">json</span><span class="p">())</span>
+        <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">link</span> <span class="o">=&gt;</span> <span class="nb">window</span><span class="p">.</span><span class="nx">location</span><span class="p">.</span><span class="nx">href</span> <span class="o">=</span> <span class="nx">link</span><span class="p">.</span><span class="nx">original_url</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="nx">render</span><span class="p">()</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="p">(</span>
+        <span class="o">&lt;</span><span class="nx">div</span> <span class="nx">className</span><span class="o">=</span><span class="s2">"code-redirect"</span><span class="o">&gt;</span>
+          <span class="o">&lt;</span><span class="nx">h2</span><span class="o">&gt;</span><span class="nx">Thank</span> <span class="nx">you</span> <span class="k">for</span> <span class="nx">using</span><span class="o">&lt;</span><span class="sr">/h2</span><span class="err">&gt;
+</span>          <span class="o">&lt;</span><span class="nx">img</span> <span class="nx">src</span><span class="o">=</span><span class="p">{</span><span class="nx">logo</span><span class="p">}</span> <span class="nx">alt</span><span class="o">=</span><span class="s2">"logo"</span><span class="o">/&gt;</span>
+        <span class="o">&lt;</span><span class="sr">/div</span><span class="err">&gt;
+</span>      <span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+</code></pre>
+</div>
+
+<p>In the <code class="highlighter-rouge">componentWillMount</code> method, we perform our fetch request to the API which returns a <code class="highlighter-rouge">Link</code> object that contains the matching <code class="highlighter-rouge">code</code> and <code class="highlighter-rouge">original_url</code>. We set the <code class="highlighter-rouge">window.location.href</code> to the <code class="highlighter-rouge">original_url</code> we get returned, which returns us to our desired page! Since there was a slight delay between redirects, I figure it would be cool to add a ‘splash page’ with our site logo for some nice free promotion. :)</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>I had a lot of fun working on this project and learned a lot! To challenge myself even further, it would be interesting to see if we can handle the redirect from the backend and test the speed/performance. You can check out the final app at https://smol-trim.herokuapp.com/.</p>
+
+<p>Thanks for reading!</p>
 
 
 </div>
