@@ -11,8 +11,8 @@ date: '2017-12-24 16:16:01 -0600'
 
 Recently I was tasked with creating a URL shortener application in whatever language or framework that I wanted. I was given a mock-up PDF of what the final product was going to look like, along with a folder of jpg resources. I was loving this because I always get hung up on the design of my projects before I even scratch the surface of the logic component of the project. This way, I was given all my tools and a specific end goal and just had to deliver results: an app that would shorten a URL, and would actually redirect to the original URL when pasted into a browser.
 
-GitHub Repo: [https://github.com/smendoza787/trim](https://github.com/smendoza787/trim)
-Project URL: [https://smol-trim.herokuapp.com/](https://smol-trim.herokuapp.com/)
+- GitHub Repo: [https://github.com/smendoza787/trim](https://github.com/smendoza787/trim)
+- Project URL: [https://smol-trim.herokuapp.com/](https://smol-trim.herokuapp.com/)
 
 # Whats The Plan?
 
