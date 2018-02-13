@@ -28,10 +28,10 @@ But why are so many people moving to the cloud? Turns out that there are a ton o
 Let's run through some of the benefits of the cloud and why you should consider migrating your application to cloud-based services:
 
 ## Flexibility
-- If your application goes through a fluctuation of bandwidth demands, a cloud service would highly benefit you by providing you with the capability to scale up your capacity on-demand. At the same time, if your business needs happen to decrease, you can easily scale down your services to save a little cash. The flexibility and automation of the cloud can really help you save money, and meet the demand of your customers when you really need it.
+If your application goes through a fluctuation of bandwidth demands, a cloud service would highly benefit you by providing you with the capability to scale up your capacity on-demand. At the same time, if your business needs happen to decrease, you can easily scale down your services to save a little cash. The flexibility and automation of the cloud can really help you save money, and meet the demand of your customers when you really need it.
 
 ## Disaster Recovery
-- In the unfortunate event that something happens to your data, having a system in place to recover that data as quickly as possible should be at the top of your list. Up until recently, smaller businesses would have to spend additional resources in order to get the expertise and knowledge needed to recover their data. Cloud services have baked recovery right into their systems in order to aid businesses in recovering their information faster than ever before with less overhead.
+In the unfortunate event that something happens to your data, having a system in place to recover that data as quickly as possible should be at the top of your list. Up until recently, smaller businesses would have to spend additional resources in order to get the expertise and knowledge needed to recover their data. Cloud services have baked recovery right into their systems in order to aid businesses in recovering their information faster than ever before with less overhead.
 
 ## Software Updates
 Having your servers off-site and out-of-mind has the extreme benefit not having to be responsible for maintaining the integrity of your systems. Cloud providers take care of all the nitty-gritty software updates so you can focus on developing your product rather than meticulously maintaining it.
