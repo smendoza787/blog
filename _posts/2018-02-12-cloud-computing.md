@@ -36,10 +36,10 @@ Let's run through some of the benefits of the cloud and why you should consider 
 ## High-Cost Avoidance
     - Cloud computing allows you to avoid the high costs of purchasing high-quality hardware and the headaches that come with it. Just pick your plan and pay-as-you-go!
 ## Increased Collaboration
-    - Cloud computing puts all of your teams work in one central repository that everyone on your team has access to wherever they are. This greatly improves workflow and allows full visibility across your team..
+    - Cloud computing puts all of your teams work in one central repository that everyone on your team has access to wherever they are. This greatly improves workflow and allows full visibility across your team.
 ## Competitiveness
     - Moving to the cloud allows companies of any size access to enterprise-level technology so even small businesses can compete with giants.
 
-As a newbie coming into the cloud computing world, these are just some of theassove benefits I've found when I asked myself the question: what's the big deal about cloud computing? As I dive deeper into the cloud space I'm sure I'll find even more benefits to migrating applications to the cloud.
+As a newbie coming into the cloud computing world, these are just some of the massive benefits I've found when I asked myself the question: what's the big deal with cloud computing? As I dive deeper into the cloud space I'm sure I'll find even more benefits to migrating applications to the cloud.
 
 I hope you found this post useful and use it to convince yourself or others to start making the move into the cloud!
